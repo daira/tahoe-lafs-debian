@@ -15,7 +15,7 @@ Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}, python-pyasn1, python-crypto,
  python-foolscap (>= 0.6.3), python-openssl, python-nevow, python-simplejson,
  python-zfec, python-pycryptopp (>= 0.5.29), python-setuptools, python-mock,
- python-twisted
+ python-twisted, net-tools
 Description: Secure distributed filesystem
  Tahoe, the Least Authority File System, is a distributed filesystem that
  features high reliability, strong security properties, and a fine-grained
