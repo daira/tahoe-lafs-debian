@@ -1,3 +1,10 @@
+tahoe-lafs (1.10.0-1) unstable; urgency=low
+
+  [Bert Agaz]
+  * New upstream release.
+
+ -- Micah Anderson <micah@debian.org>  Wed, 04 Sep 2013 10:33:09 +0200
+
 tahoe-lafs (1.9.2-1) unstable; urgency=low
 
   [ Bert Agaz ]
