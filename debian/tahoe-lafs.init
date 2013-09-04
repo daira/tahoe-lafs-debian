@@ -1,0 +1,135 @@
+#!/bin/sh -e
+
+### BEGIN INIT INFO
+# Provides:          tahoe-lafs
+# Required-Start:    $remote_fs
+# Required-Stop:     $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Tahoe-lafs nodes
+### END INIT INFO
+
+# Initscript by bertagaz <bertagaz@ptitcanardnoir.org>
+# Heavily rewrote from openvpn initscript by Robert Leslie
+
+. /lib/lsb/init-functions
+
+DAEMON=/usr/bin/tahoe
+DESC="Tahoe-lafs secure filesystems"
+CONFIG_DIR=/var/lib/tahoe-lafs
+test -x $DAEMON || exit 1
+test -d $CONFIG_DIR || exit 1
+
+# Source defaults file; edit that file to configure this script.
+AUTOSTART=""
+if test -e /etc/default/tahoe-lafs; then
+  . /etc/default/tahoe-lafs
+fi
+
+get_node_uid () {
+    UID=`stat -c %u $CONFIG_DIR/$NAME`
+}
+
+start_tahoe () {
+    DAEMONARG="--syslog"
+
+    log_progress_msg "$NAME"
+    STATUS=0
+
+    get_node_uid $NAME
+
+    if [ $UID -ne 0 ]; then
+      start-stop-daemon --start --quiet --oknodo \
+          --pidfile $CONFIG_DIR/$NAME/twistd.pid \
+          --exec $DAEMON --chuid $UID -- start $DAEMONARG \
+	  $CONFIG_DIR/$NAME 1> /dev/null|| STATUS=1
+    else
+      log_failure_msg "$NAME node directory shouldn't be owned by root!"
+    fi
+}
+
+stop_tahoe () {
+    kill `cat $CONFIG_DIR/$NAME/twistd.pid` || STATUS=1
+}
+
+case "$1" in
+start)
+  log_daemon_msg "Starting $DESC"
+
+  if test -z "$2" ; then
+    if test "x$AUTOSTART" = "xnone" -o -z "$AUTOSTART" ; then
+      log_warning_msg " Autostart disabled."
+      exit 0
+    fi
+    if test -z "$AUTOSTART" -o "x$AUTOSTART" = "xall" ; then
+      # all nodes shall be started automatically
+      for NAME in `cd $CONFIG_DIR; find ./ -mindepth 1 -maxdepth 1 -type d | cut -c3-  2> /dev/null`; do
+        start_tahoe
+      done
+    else
+      # start only specified nodes
+      for NAME in $AUTOSTART ; do
+        if test -d $CONFIG_DIR/$NAME ; then
+          start_tahoe
+        else
+          log_failure_msg "No such node configured: $NAME"
+          STATUS=1
+        fi
+      done
+    fi
+  else
+    while shift ; do
+      [ -z "$1" ] && break
+      NAME=$1
+      if test -d $CONFIG_DIR/$NAME ; then
+        start_tahoe
+      else
+       log_failure_msg " No such node configured: $NAME"
+       STATUS=1
+      fi
+    done
+  fi
+  log_end_msg ${STATUS:-0}
+
+  ;;
+stop)
+  log_daemon_msg "Stopping $DESC"
+
+  if test -z "$2" ; then
+    for PIDFILE in `find $CONFIG_DIR -name twistd.pid 2> /dev/null`; do
+      NAME=`echo $PIDFILE | cut -c21- | sed -e 's/\/twistd.pid//'`
+      stop_tahoe
+      log_progress_msg "$NAME"
+    done
+  else
+    while shift ; do
+      [ -z "$1" ] && break
+      NAME=$1
+      if test -e $CONFIG_DIR/$NAME/twistd.pid ; then
+        stop_tahoe
+        log_progress_msg "$NAME"
+      else
+        log_failure_msg " (failure: No such node running: $NAME)"
+      fi
+    done
+  fi
+  log_end_msg ${STATUS:-0}
+  ;;
+restart)
+  shift
+  $0 stop ${@}
+  sleep 1
+  $0 start ${@}
+  ;;
+force-reload)
+  $0 restart ${@}
+  ;;
+*)
+  echo "Usage: $0 {start|stop|restart}" >&2
+  exit 1
+  ;;
+esac
+
+exit 0
+
+# vim:set ai sts=2 sw=2 tw=0:
