@@ -125,7 +125,7 @@ force-reload)
   $0 restart ${@}
   ;;
 *)
-  echo "Usage: $0 {start|stop|restart}" >&2
+  echo "Usage: $0 {start|stop|restart|force-reload}" >&2
   exit 1
   ;;
 esac
