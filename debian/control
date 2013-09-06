@@ -5,7 +5,7 @@ Maintainer: Bert Agaz <bertagaz@ptitcanardnoir.org>
 Uploaders: Micah Anderson <micah@debian.org>
 Build-Depends: debhelper (>= 9), python-setuptools, python-all (>= 2.6.6-3~),
  python-twisted
-Standards-Version: 3.9.3
+Standards-Version: 3.9.4
 Vcs-Git: git://anonscm.debian.org/tahoe/tahoe.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=tahoe/tahoe.git
 Homepage: http://tahoe-lafs.org/trac/tahoe
