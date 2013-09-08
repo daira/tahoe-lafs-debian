@@ -6,6 +6,7 @@ tahoe-lafs (1.10.0-1) unstable; urgency=low
   * Import upstream patch to support kFreeBSD. (Closes: #700239).
   * Standards version bump.
   * Add sysvinit script (Closes: #652003).
+  * Include a README.Debian to document how to manage nodes in Debian.
 
  -- Micah Anderson <micah@debian.org>  Wed, 04 Sep 2013 10:33:09 +0200
 
