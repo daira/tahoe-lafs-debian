@@ -3,7 +3,7 @@
 ============================
 
 Since package version 1.10.0-1, tahoe-lafs is shipped with a initscript that
-helps sysadmins managing the nodes installed on their system.
+helps sysadmins to manage the nodes installed on the system.
 
 To be used, this initscript requires that the tahoe node directory is stored
 under `/var/lib/tahoe-lafs/`.
@@ -12,8 +12,8 @@ The initscript scans /var/lib/tahoe-lafs/ to find nodes configuration, and use
 each node directory owner as the uid of the node's tahoe process. This helps in
 having a bit more isolation between them.
 
-So, in order to configure a node managed by this initscript, you can use this
-steps (as root) :
+In order to configure a node managed by this initscript, Use this steps (as
+root):
 
 # Setup some helpful variables
 $ export NICK="nickname"
