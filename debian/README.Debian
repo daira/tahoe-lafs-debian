@@ -22,24 +22,24 @@ Setup some helpful variables
 
 Add a system user
 
-  # adduser --system --home $BASEDIR $NICK
+  # adduser --system --home "${BASEDIR}" "${NICK}"
 
 Create your node, using the tahoe `-d` option, eg:
 
-  # tahoe -d $BASEDIR create-client -n $NICK
+  # tahoe -d "${BASEDIR}" create-client -n "${NICK}"
 
 Edit the configuration:
 
-  # view $BASEDIR/tahoe.cfg
+  # view "${BASEDIR}"/tahoe.cfg
 
 Fix permissions
 
-  # chown -R $NICK:nogroup $BASEDIR
+  # chown -R "${NICK}":nogroup "${BASEDIR}"
 
 And even tighten them.
 
-  # find $BASEDIR -type d -exec chmod 700 {} \;
-  # find $BASEDIR -type f -exec chmod 600 {} \;
+  # find "${BASEDIR}" -type d -exec chmod 700 {} \;
+  # find "${BASEDIR}" -type f -exec chmod 600 {} \;
 
 
 Use /etc/default/tahoe-lafs to configure the initscript and explain it which
