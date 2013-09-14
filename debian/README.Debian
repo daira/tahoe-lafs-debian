@@ -15,25 +15,32 @@ having a bit more isolation between them.
 In order to configure a node managed by this initscript, Use this steps (as
 root):
 
-# Setup some helpful variables
-$ export NICK="nickname"
-$ export BASEDIR="/var/lib/tahoe-lafs/${NICK}"
+Setup some helpful variables
 
-# Add a system user
-$ adduser --system --home $BASEDIR $NICK
+  # export NICK="nickname"
+  # export BASEDIR="/var/lib/tahoe-lafs/${NICK}"
 
-# Create your node, using the tahoe `-d` option, eg:
-$ tahoe -d $BASEDIR create-client -n $NICK
+Add a system user
 
-# Edit the configuration:
-$ view $BASEDIR/tahoe.cfg
+  # adduser --system --home $BASEDIR $NICK
 
-# Fix permissions
-$ chown -R $NICK:nogroup $BASEDIR
+Create your node, using the tahoe `-d` option, eg:
 
-# And even tighten them.
-$ find $BASEDIR -type d -exec chmod 700 {} \;
-$ find $BASEDIR -type f -exec chmod 600 {} \;
+  # tahoe -d $BASEDIR create-client -n $NICK
+
+Edit the configuration:
+
+  # view $BASEDIR/tahoe.cfg
+
+Fix permissions
+
+  # chown -R $NICK:nogroup $BASEDIR
+
+And even tighten them.
+
+  # find $BASEDIR -type d -exec chmod 700 {} \;
+  # find $BASEDIR -type f -exec chmod 600 {} \;
+
 
 Use /etc/default/tahoe-lafs to configure the initscript and explain it which
 nodes to start at boot time.
