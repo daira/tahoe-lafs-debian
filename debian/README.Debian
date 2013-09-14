@@ -18,11 +18,12 @@ root):
 Setup some helpful variables
 
   # export NICK="nickname"
+  # export NODE_USER="fillinausername"
   # export BASEDIR="/var/lib/tahoe-lafs/${NICK}"
 
 Add a system user
 
-  # adduser --system --home "${BASEDIR}" "${NICK}"
+  # adduser --system --home "${BASEDIR}" "${NODE_USER}"
 
 Create your node, using the tahoe `-d` option, eg:
 
@@ -34,7 +35,7 @@ Edit the configuration:
 
 Fix permissions
 
-  # chown -R "${NICK}":nogroup "${BASEDIR}"
+  # chown -R "${NODE_USER}":nogroup "${BASEDIR}"
 
 And even tighten them.
 
