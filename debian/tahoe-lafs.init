@@ -21,7 +21,9 @@ test -x $DAEMON || exit 1
 test -d $CONFIG_DIR || exit 1
 
 # Source defaults file; edit that file to configure this script.
+DAEMONARGS="--syslog"
 AUTOSTART=""
+
 if test -e /etc/default/tahoe-lafs; then
   . /etc/default/tahoe-lafs
 fi
@@ -31,7 +33,6 @@ get_node_uid () {
 }
 
 start_tahoe () {
-    DAEMONARG="--syslog"
 
     log_progress_msg "$NAME"
     STATUS=0
@@ -41,7 +42,7 @@ start_tahoe () {
     if [ $UID -ne 0 ]; then
       start-stop-daemon --start --quiet --oknodo \
           --pidfile $CONFIG_DIR/$NAME/twistd.pid \
-          --exec $DAEMON --chuid $UID -- start $DAEMONARG \
+          --exec $DAEMON --chuid $UID -- start $DAEMONARGS \
 	  $CONFIG_DIR/$NAME 1> /dev/null|| STATUS=1
     else
       log_failure_msg "$NAME node directory shouldn't be owned by root!"

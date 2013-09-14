@@ -5,3 +5,6 @@
 #AUTOSTART="all"
 #AUTOSTART="none"
 #AUTOSTART="home office"
+
+# Pass arguments to tahoe start. Default to "--syslog".
+#DAEMONARGS=
