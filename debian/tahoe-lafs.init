@@ -14,9 +14,9 @@
 
 . /lib/lsb/init-functions
 
-DAEMON=/usr/bin/tahoe
+DAEMON="/usr/bin/tahoe"
 DESC="Tahoe-lafs secure filesystems"
-CONFIG_DIR=/var/lib/tahoe-lafs
+CONFIG_DIR="/var/lib/tahoe-lafs"
 test -x $DAEMON || exit 1
 test -d $CONFIG_DIR || exit 1
 
@@ -29,28 +29,29 @@ if test -e /etc/default/tahoe-lafs; then
 fi
 
 get_node_uid () {
-    UID=`stat -c %u $CONFIG_DIR/$NAME`
+    local node_dir="$1"
+    echo `stat -c %u "$CONFIG_DIR/${node_dir}"`
 }
 
 start_tahoe () {
-
-    log_progress_msg "$NAME"
+    local node_name="$1"
+    local node_uid=$(get_node_uid "$node_name")
+    log_progress_msg "$node_name"
     STATUS=0
 
-    get_node_uid $NAME
-
-    if [ $UID -ne 0 ]; then
+    if [ "$node_uid" -ne "0" ]; then
         start-stop-daemon --start --quiet --oknodo \
-            --pidfile $CONFIG_DIR/$NAME/twistd.pid \
-            --exec $DAEMON --chuid $UID -- start $DAEMONARGS \
-	    $CONFIG_DIR/$NAME 1> /dev/null|| STATUS=1
+            --pidfile "$CONFIG_DIR/${node_name}/twistd.pid" \
+            --exec $DAEMON --chuid "$node_uid" -- start $DAEMONARGS \
+	    "$CONFIG_DIR/${node_name}" || STATUS=1
     else
-        log_failure_msg "$NAME node directory shouldn't be owned by root!"
+        log_failure_msg "${node_name} node directory shouldn't be owned by root!"
     fi
 }
 
 stop_tahoe () {
-    kill `cat $CONFIG_DIR/$NAME/twistd.pid` || STATUS=1
+    local node_name="$1"
+    kill `cat "$CONFIG_DIR/${node_name}/twistd.pid"` || STATUS=1
 }
 
 case "$1" in
@@ -58,22 +59,22 @@ start)
     log_daemon_msg "Starting $DESC"
 
     if test -z "$2" ; then
-        if test "x$AUTOSTART" = "xnone" -o -z "$AUTOSTART" ; then
+        if test "$AUTOSTART" = "none" -o -z "$AUTOSTART" ; then
             log_warning_msg " Autostart disabled."
             exit 0
         fi
-        if test -z "$AUTOSTART" -o "x$AUTOSTART" = "xall" ; then
+        if test -z "$AUTOSTART" -o "$AUTOSTART" = "all" ; then
         # all nodes shall be started automatically
-            for NAME in `cd $CONFIG_DIR; find ./ -mindepth 1 -maxdepth 1 -type d | cut -c3-  2> /dev/null`; do
-                start_tahoe
+            for name in `cd $CONFIG_DIR; find ./ -mindepth 1 -maxdepth 1 -type d | cut -c3-`; do
+                start_tahoe "$name"
             done
         else
         # start only specified nodes
-        for NAME in $AUTOSTART ; do
-            if test -d $CONFIG_DIR/$NAME ; then
-                start_tahoe
+        for name in "$AUTOSTART" ; do
+            if test -d "$CONFIG_DIR/${name}" ; then
+                start_tahoe "$name"
             else
-                log_failure_msg "No such node configured: $NAME"
+                log_failure_msg " No such node configured: $name"
                 STATUS=1
             fi
         done
@@ -81,11 +82,11 @@ start)
     else
         while shift ; do
             [ -z "$1" ] && break
-            NAME=$1
-            if test -d $CONFIG_DIR/$NAME ; then
-                start_tahoe
+            name="$1"
+            if test -d "$CONFIG_DIR/${name}" ; then
+                start_tahoe "$name"
             else
-               log_failure_msg " No such node configured: $NAME"
+               log_failure_msg " No such node configured: $name"
                STATUS=1
             fi
         done
@@ -96,20 +97,20 @@ stop)
     log_daemon_msg "Stopping $DESC"
 
     if test -z "$2" ; then
-        for PIDFILE in `find $CONFIG_DIR -name twistd.pid 2> /dev/null`; do
-            NAME=`echo $PIDFILE | cut -c21- | sed -e 's/\/twistd.pid//'`
-            stop_tahoe
-            log_progress_msg "$NAME"
+        for pidfile in `find $CONFIG_DIR -name twistd.pid` ; do
+            name=`echo "$pidfile" | cut -c21- | sed -e 's/\/twistd.pid//'`
+            stop_tahoe "$name"
+            log_progress_msg "$name"
         done
     else
         while shift ; do
             [ -z "$1" ] && break
-            NAME=$1
-            if test -e $CONFIG_DIR/$NAME/twistd.pid ; then
-                stop_tahoe
-                log_progress_msg "$NAME"
+            name="$1"
+            if test -e "$CONFIG_DIR/${name}/twistd.pid" ; then
+                stop_tahoe "$name"
+                log_progress_msg "$name"
             else
-                log_failure_msg " (failure: No such node running: $NAME)"
+                log_failure_msg " No such node running: $name"
             fi
         done
     fi
@@ -117,12 +118,12 @@ stop)
     ;;
 restart)
     shift
-    $0 stop ${@}
+    $0 stop "${@}"
     sleep 1
-    $0 start ${@}
+    $0 start "${@}"
     ;;
 force-reload)
-    $0 restart ${@}
+    $0 restart "${@}"
     ;;
 *)
     echo "Usage: $0 {start|stop|restart|force-reload}" >&2
