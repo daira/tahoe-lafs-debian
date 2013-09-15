@@ -69,16 +69,16 @@ start)
                 start_tahoe "$name"
             done
         else
-        # start only specified nodes
-        for name in "$AUTOSTART" ; do
-            if test -d "$CONFIG_DIR/${name}" ; then
-                start_tahoe "$name"
-            else
-                log_failure_msg " No such node configured: $name"
-                STATUS=1
-            fi
-        done
-    fi
+            # start only nodes specified in $AUtOSTART
+            for name in "$AUTOSTART" ; do
+                if test -d "$CONFIG_DIR/${name}" ; then
+                    start_tahoe "$name"
+                else
+                    log_failure_msg " No such node configured: $name"
+                    STATUS=1
+                fi
+            done
+        fi
     else
         while shift ; do
             [ -z "$1" ] && break
@@ -111,6 +111,7 @@ stop)
                 log_progress_msg "$name"
             else
                 log_failure_msg " No such node running: $name"
+                STATUS=1
             fi
         done
     fi
