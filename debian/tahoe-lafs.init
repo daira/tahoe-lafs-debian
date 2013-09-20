@@ -30,7 +30,7 @@ fi
 
 get_node_uid () {
     local node_dir="$1"
-    echo `stat -c %u "$CONFIG_DIR/${node_dir}"`
+    echo `stat -c %U "$CONFIG_DIR/${node_dir}"`
 }
 
 _tahoe () {
@@ -43,7 +43,7 @@ _tahoe () {
 
     case $action in
         start)
-            if [ "$node_uid" -ne "0" ]; then
+            if [ "$node_uid" != "root" ]; then
                 start-stop-daemon --start --quiet --oknodo \
                     --pidfile "$CONFIG_DIR/${node_name}/twistd.pid" \
                     --exec $DAEMON --chuid "$node_uid" -- \
@@ -53,7 +53,8 @@ _tahoe () {
             fi
         ;;
         stop)
-            kill `cat "$CONFIG_DIR/${node_name}/twistd.pid"` || STATUS=1
+            su -s "/bin/sh" -c "$DAEMON stop $CONFIG_DIR/${node_name}" "$node_uid" > /dev/null
+            STATUS=$?
         ;;
     esac
 }
