@@ -56,6 +56,10 @@ _tahoe () {
             su -s "/bin/sh" -c "$DAEMON stop $CONFIG_DIR/${node_name}" "$node_uid" > /dev/null
             STATUS=$?
         ;;
+        restart)
+            su -s "/bin/sh" -c "$DAEMON restart $CONFIG_DIR/${node_name}" "$node_uid" > /dev/null
+            STATUS=$?
+        ;;
     esac
 }
 
@@ -121,10 +125,26 @@ stop)
     log_end_msg ${STATUS:-0}
     ;;
 restart)
-    shift
-    $0 stop "${@}"
-    sleep 1
-    $0 start "${@}"
+    log_daemon_msg "Restarting $DESC"
+
+    if test -z "$2" ; then
+        for pidfile in `find $CONFIG_DIR -name twistd.pid` ; do
+            name=`echo "$pidfile" | cut -c21- | sed -e 's/\/twistd.pid//'`
+            _tahoe restart "$name"
+        done
+    else
+        while shift ; do
+            [ -z "$1" ] && break
+            name="$1"
+            if test -e "$CONFIG_DIR/${name}/twistd.pid" ; then
+                _tahoe restart "$name"
+            else
+                log_failure_msg " No such node running: $name"
+                STATUS=1
+            fi
+        done
+    fi
+    log_end_msg ${STATUS:-0}
     ;;
 force-reload)
     $0 restart "${@}"
