@@ -72,7 +72,7 @@ start)
             log_warning_msg " Autostart disabled."
             exit 0
         fi
-        if test -z "$AUTOSTART" -o "$AUTOSTART" = "all" ; then
+        if "$AUTOSTART" = "all" ; then
         # all nodes shall be started automatically
             for name in `cd $CONFIG_DIR; find ./ -mindepth 1 -maxdepth 1 -type d | cut -c3-`; do
                 _tahoe start "$name"
