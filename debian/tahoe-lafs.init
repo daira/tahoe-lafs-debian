@@ -78,7 +78,7 @@ start)
                 _tahoe start "$name"
             done
         else
-            # start only nodes specified in $AUtOSTART
+            # start only nodes specified in $AUTOSTART
             for name in "$AUTOSTART" ; do
                 if test -d "$CONFIG_DIR/${name}" ; then
                     _tahoe start "$name"
