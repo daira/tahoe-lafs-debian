@@ -6,7 +6,7 @@
 # Required-Stop:     $network $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Tahoe-lafs nodes
+# Short-Description: Tahoe-LAFS nodes
 ### END INIT INFO
 
 # Initscript by bertagaz <bertagaz@ptitcanardnoir.org>
@@ -15,7 +15,7 @@
 . /lib/lsb/init-functions
 
 DAEMON="/usr/bin/tahoe"
-DESC="Tahoe-lafs secure filesystems"
+DESC="Tahoe-LAFS secure filesystems"
 CONFIG_DIR="/var/lib/tahoe-lafs"
 test -x $DAEMON || exit 1
 test -d $CONFIG_DIR || exit 1
