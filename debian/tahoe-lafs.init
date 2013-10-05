@@ -59,8 +59,9 @@ _tahoe () {
 }
 
 case "$1" in
-start)
-    log_daemon_msg "Starting $DESC"
+start|stop|restart)
+    log_daemon_msg "$DESC"
+    command="$1"
 
     if test -z "$2" ; then
         if test "$AUTOSTART" = "none" -o -z "$AUTOSTART" ; then
@@ -68,15 +69,15 @@ start)
             exit 0
         fi
         if "$AUTOSTART" = "all" ; then
-        # all nodes shall be started automatically
+        # all nodes shall be taken care of automatically
             for name in `cd $CONFIG_DIR; find ./ -mindepth 1 -maxdepth 1 -type d | cut -c3-`; do
-                _tahoe start "$name"
+                _tahoe "$command" "$name"
             done
         else
-            # start only nodes specified in $AUTOSTART
+            # invoke command only for nodes specified in $AUTOSTART
             for name in "$AUTOSTART" ; do
                 if test -d "$CONFIG_DIR/${name}" ; then
-                    _tahoe start "$name"
+                    _tahoe "$command" "$name"
                 else
                     log_failure_msg " No such node configured: $name"
                     STATUS=1
@@ -88,54 +89,10 @@ start)
             [ -z "$1" ] && break
             name="$1"
             if test -d "$CONFIG_DIR/${name}" ; then
-                _tahoe start "$name"
+                _tahoe "$command" "$name"
             else
                log_failure_msg " No such node configured: $name"
                STATUS=1
-            fi
-        done
-    fi
-    log_end_msg ${STATUS:-0}
-    ;;
-stop)
-    log_daemon_msg "Stopping $DESC"
-
-    if test -z "$2" ; then
-        for pidfile in `find $CONFIG_DIR -name twistd.pid` ; do
-            name=`echo "$pidfile" | cut -c21- | sed -e 's/\/twistd.pid//'`
-            _tahoe stop "$name"
-        done
-    else
-        while shift ; do
-            [ -z "$1" ] && break
-            name="$1"
-            if test -e "$CONFIG_DIR/${name}/twistd.pid" ; then
-                _tahoe stop "$name"
-            else
-                log_failure_msg " No such node running: $name"
-                STATUS=1
-            fi
-        done
-    fi
-    log_end_msg ${STATUS:-0}
-    ;;
-restart)
-    log_daemon_msg "Restarting $DESC"
-
-    if test -z "$2" ; then
-        for pidfile in `find $CONFIG_DIR -name twistd.pid` ; do
-            name=`echo "$pidfile" | cut -c21- | sed -e 's/\/twistd.pid//'`
-            _tahoe restart "$name"
-        done
-    else
-        while shift ; do
-            [ -z "$1" ] && break
-            name="$1"
-            if test -e "$CONFIG_DIR/${name}/twistd.pid" ; then
-                _tahoe restart "$name"
-            else
-                log_failure_msg " No such node running: $name"
-                STATUS=1
             fi
         done
     fi
