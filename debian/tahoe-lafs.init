@@ -38,8 +38,6 @@ _tahoe () {
     local node_name="$2"
     local node_uid=$(get_node_uid "$node_name")
 
-    log_progress_msg "$node_name"
-
     if [ "$node_uid" = "root" ]; then
         log_failure_msg "${node_name} node directory shouldn't be owned by root!"
         return 1
@@ -57,8 +55,10 @@ _tahoe () {
 
 case "$1" in
 start|stop|restart)
-    log_daemon_msg "$DESC"
     command="$1"
+
+    log_daemon_msg "$DESC"
+    log_progress_msg "\n"
 
     if [ -z "$2" ]; then
         if [ "$AUTOSTART" = "none" ] || [ -z "$AUTOSTART" ]; then
