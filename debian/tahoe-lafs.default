@@ -1,6 +1,6 @@
 # Start only these tahoe-lafs nodes automatically via init script.  Allowed
 # values are "all", "none" or space separated list of tahoe-lafs nodes. If
-# empty, "all" is assumed.
+# empty, "none" is assumed.
 #
 #AUTOSTART="all"
 #AUTOSTART="none"
