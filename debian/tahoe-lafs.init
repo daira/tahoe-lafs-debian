@@ -41,23 +41,18 @@ _tahoe () {
 
     log_progress_msg "$node_name"
 
-    case $action in
-        start)
-            if [ "$node_uid" != "root" ]; then
-                start-stop-daemon --start --quiet --oknodo \
-                    --pidfile "$CONFIG_DIR/${node_name}/twistd.pid" \
-                    --exec $DAEMON --chuid "$node_uid" -- \
-                    start $DAEMONARGS "$CONFIG_DIR/${node_name}" > /dev/null || STATUS=1
-            else
-                log_failure_msg "${node_name} node directory shouldn't be owned by root!"
-            fi
-        ;;
-        stop)
-            su -s "/bin/sh" -c "$DAEMON stop $CONFIG_DIR/${node_name}" "$node_uid" > /dev/null
+    if [ "$node_uid" = "root" ]; then
+        log_failure_msg "${node_name} node directory shouldn't be owned by root!"
+        return 1
+    fi
+
+    case "$action" in
+        start|restart)
+            su -s "/bin/sh" -c "$DAEMON $action $DAEMONARGS $CONFIG_DIR/${node_name}" "$node_uid" > /dev/null
             STATUS=$?
         ;;
-        restart)
-            su -s "/bin/sh" -c "$DAEMON restart $CONFIG_DIR/${node_name}" "$node_uid" > /dev/null
+        stop)
+            su -s "/bin/sh" -c "$DAEMON $action $CONFIG_DIR/${node_name}" "$node_uid" > /dev/null
             STATUS=$?
         ;;
     esac
