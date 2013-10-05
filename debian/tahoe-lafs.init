@@ -37,7 +37,6 @@ _tahoe () {
     local action="$1"
     local node_name="$2"
     local node_uid=$(get_node_uid "$node_name")
-    STATUS=0
 
     log_progress_msg "$node_name"
 
@@ -48,12 +47,10 @@ _tahoe () {
 
     case "$action" in
         start|restart)
-            su -s "/bin/sh" -c "$DAEMON $action $DAEMONARGS $CONFIG_DIR/${node_name}" "$node_uid" > /dev/null
-            STATUS=$?
+            su -s "/bin/sh" -c "$DAEMON $action $DAEMONARGS $CONFIG_DIR/${node_name}" "$node_uid"
         ;;
         stop)
-            su -s "/bin/sh" -c "$DAEMON $action $CONFIG_DIR/${node_name}" "$node_uid" > /dev/null
-            STATUS=$?
+            su -s "/bin/sh" -c "$DAEMON $action $CONFIG_DIR/${node_name}" "$node_uid"
         ;;
     esac
 }
@@ -66,34 +63,23 @@ start|stop|restart)
     if [ -z "$2" ]; then
         if [ "$AUTOSTART" = "none" ] || [ -z "$AUTOSTART" ]; then
             log_warning_msg " Autostart disabled."
-            exit 0
         fi
         if [ "$AUTOSTART" = "all" ]; then
-        # all nodes shall be taken care of automatically
+            # all nodes shall be taken care of automatically
             for name in `cd $CONFIG_DIR; find ./ -mindepth 1 -maxdepth 1 -type d | cut -c3-`; do
-                _tahoe "$command" "$name"
+                _tahoe "$command" "$name" || STATUS="$?"
             done
         else
             # invoke command only for nodes specified in $AUTOSTART
             for name in "$AUTOSTART" ; do
-                if [ -d "$CONFIG_DIR/${name}" ]; then
-                    _tahoe "$command" "$name"
-                else
-                    log_failure_msg " No such node configured: $name"
-                    STATUS=1
-                fi
+                _tahoe "$command" "$name" || STATUS="$?"
             done
         fi
     else
         while shift ; do
             [ -z "$1" ] && break
             name="$1"
-            if [ -d "$CONFIG_DIR/${name}" ]; then
-                _tahoe "$command" "$name"
-            else
-               log_failure_msg " No such node configured: $name"
-               STATUS=1
-            fi
+            _tahoe "$command" "$name" || STATUS="$?"
         done
     fi
     log_end_msg ${STATUS:-0}
