@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 
 ### BEGIN INIT INFO
 # Provides:          tahoe-lafs
@@ -11,6 +11,8 @@
 
 # Initscript by bertagaz <bertagaz@ptitcanardnoir.org>
 # Heavily rewrote from openvpn initscript by Robert Leslie
+
+set -e
 
 . /lib/lsb/init-functions
 
