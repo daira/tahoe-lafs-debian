@@ -30,7 +30,7 @@ fi
 
 get_node_uid () {
     local node_dir="$1"
-    echo `stat -c %U "$CONFIG_DIR/${node_dir}"`
+    stat -c %U "$CONFIG_DIR/${node_dir}"
 }
 
 _tahoe () {
