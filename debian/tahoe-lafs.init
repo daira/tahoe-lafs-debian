@@ -45,10 +45,10 @@ _tahoe () {
 
     case "$action" in
         start|restart)
-            su -s "/bin/sh" -c "$DAEMON $action $DAEMONARGS $CONFIG_DIR/${node_name}" "$node_uid"
+            su -s "/bin/sh" -c "'$DAEMON' '$action' $DAEMONARGS '$CONFIG_DIR/${node_name}'" "$node_uid"
         ;;
         stop)
-            su -s "/bin/sh" -c "$DAEMON $action $CONFIG_DIR/${node_name}" "$node_uid"
+            su -s "/bin/sh" -c "'$DAEMON' '$action' '$CONFIG_DIR/${node_name}'" "$node_uid"
         ;;
     esac
 }
