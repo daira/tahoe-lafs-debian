@@ -28,6 +28,11 @@ if [ -e /etc/default/tahoe-lafs ]; then
     . /etc/default/tahoe-lafs
 fi
 
+nodes_in () {
+    local dir="$1"
+    cd "$dir" && find ./ -mindepth 1 -maxdepth 1 -type d | cut -c3-
+}
+
 get_node_uid () {
     local node_dir="$1"
     stat -c %U "$CONFIG_DIR/${node_dir}"
@@ -67,7 +72,7 @@ start|stop|restart)
         fi
         if [ "$AUTOSTART" = "all" ]; then
             # all nodes shall be taken care of automatically
-            for name in $(cd $CONFIG_DIR && find ./ -mindepth 1 -maxdepth 1 -type d | cut -c3-); do
+            for name in $(nodes_in $CONFIG_DIR); do
                 _tahoe "$command" "$name" || STATUS="$?"
             done
         else
