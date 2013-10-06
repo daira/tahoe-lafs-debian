@@ -56,11 +56,12 @@ _tahoe () {
 case "$1" in
 start|stop|restart)
     command="$1"
+    shift
 
     log_daemon_msg "$DESC"
     log_progress_msg "\n"
 
-    if [ -z "$2" ]; then
+    if [ $# -eq 0 ]; then
         if [ "$AUTOSTART" = "none" ] || [ -z "$AUTOSTART" ]; then
             log_warning_msg " Autostart disabled."
         fi
@@ -76,9 +77,7 @@ start|stop|restart)
             done
         fi
     else
-        while shift ; do
-            [ -z "$1" ] && break
-            name="$1"
+        for name in "$@" ; do
             _tahoe "$command" "$name" || STATUS="$?"
         done
     fi
