@@ -66,7 +66,7 @@ start|stop|restart)
         fi
         if [ "$AUTOSTART" = "all" ]; then
             # all nodes shall be taken care of automatically
-            for name in `cd $CONFIG_DIR && find ./ -mindepth 1 -maxdepth 1 -type d | cut -c3-`; do
+            for name in $(cd $CONFIG_DIR && find ./ -mindepth 1 -maxdepth 1 -type d | cut -c3-); do
                 _tahoe "$command" "$name" || STATUS="$?"
             done
         else
