@@ -85,7 +85,7 @@ start|stop|restart)
     log_end_msg "${STATUS:-0}"
     ;;
 force-reload)
-    $0 restart "${@}"
+    $0 restart "$@"
     ;;
 *)
     echo "Usage: $0 {start|stop|restart|force-reload} [node(s)]" >&2
