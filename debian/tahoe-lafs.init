@@ -33,7 +33,7 @@ nodes_in () {
     cd "$dir" && find ./ -mindepth 1 -maxdepth 1 -type d | cut -c3-
 }
 
-get_node_uid () {
+node_uid () {
     local node_dir="$1"
     stat -c %U "$CONFIG_DIR/${node_dir}"
 }
@@ -41,7 +41,7 @@ get_node_uid () {
 _tahoe () {
     local action="$1"
     local node_name="$2"
-    local node_uid=$(get_node_uid "$node_name")
+    local node_uid=$(node_uid "$node_name")
 
     if [ "$node_uid" = "root" ]; then
         log_failure_msg "${node_name} node directory shouldn't be owned by root!"
