@@ -13,6 +13,7 @@
 # Heavily rewrote from openvpn initscript by Robert Leslie
 
 set -e
+set -u
 
 . /lib/lsb/init-functions
 
