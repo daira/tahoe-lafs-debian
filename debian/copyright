@@ -4,8 +4,12 @@ Upstream-Contact: tahoe-dev@tahoe-lafs.org
 Source: http://tahoe-lafs.org/
 
 Files: *
-Copyright: Copyright 2006-2012 AllMyData, Inc.
+Copyright: Copyright 2006-2013 AllMyData, Inc.
 License: GPL-2+ or TGPPL1+
+
+Files: setuptools-0.6c16dev4.egg/*
+Copyright: Copyright Phillip J. Eby
+License: PSF or Zope
 
 License: GPL-2+
  You may use this package under the GNU General Public License, version 2 or, at
@@ -189,10 +193,6 @@ License: TGPPL1+
  in the first paragraph above with the notice "Licensed under " or with
  a notice of your own that is not confusingly similar to the notice in
  this License.
-
-Files: setuptools-0.6c16dev3.egg/*
-Copyright: Copyright Phillip J. Eby
-License: PSF or Zope
 
 License: PSF
  PSF LICENSE AGREEMENT FOR PYTHON 2.3
