@@ -5,6 +5,7 @@ tahoe-lafs (1.10.0-1) unstable; urgency=low
   * Add missing dependency on net-tools (Closes: #683331).
   * Import upstream patch to support kFreeBSD. (Closes: #700239).
   * Standards version bump.
+  * Use dh_installchangelogs to properly install upstream NEWS.rst.
 
  -- Micah Anderson <micah@debian.org>  Wed, 04 Sep 2013 10:33:09 +0200
 
