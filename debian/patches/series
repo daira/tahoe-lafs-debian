@@ -1,3 +1,4 @@
 remove_upstream_setup_deps.diff
+customize_setupcfg_aliases.diff
 exclude_buildtest_package.diff
 add_kFreeBSD_in_supported_os.diff
