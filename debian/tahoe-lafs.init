@@ -71,7 +71,7 @@ start|stop|restart)
             done
         else
             # invoke command only for nodes specified in $AUTOSTART
-            for name in "$AUTOSTART" ; do
+            for name in $AUTOSTART ; do
                 _tahoe "$command" "$name" || STATUS="$?"
             done
         fi

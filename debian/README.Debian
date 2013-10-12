@@ -15,7 +15,8 @@ having a bit more isolation between them.
 In order to configure a node managed by this initscript, Use this steps (as
 root):
 
-Setup some helpful variables
+Setup some helpful variables first. Don't use blank spaces in the node nick,
+otherwise the initscript will fail.
 
   # export NICK="nickname"
   # export NODE_USER="fillinausername"
