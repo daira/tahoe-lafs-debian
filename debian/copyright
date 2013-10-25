@@ -12,26 +12,30 @@ Copyright: Copyright Phillip J. Eby
 License: PSF or Zope
 
 License: GPL-2+
- You may use this package under the GNU General Public License, version 2 or, at
- your option, any later version. You may also opt to use this package under the
- terms of the Transitive Grace Period Public License, version 1 or, at your
- option, any later version.
+ You may use this package under the GNU General Public License, version
+ 2 or, at your option, any later version.
  .
- On Debian GNU/Linux systems, the complete text of the GNU General
- Public License can be found in `/usr/share/common-licenses/GPL-2'.
+ This program is free software; you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published by the
+ Free Software Foundation; either version 2 of the License, or (at your
+ option) any later version.
  .
- The Transitive Grace Period Public Licence has requirements similar to the GPL
- except that it allows you to wait for up to twelve months after you redistribute
- a derived work before releasing the source code of your derived work. See the
- file COPYING.TGPPL.html for the terms of the Transitive Grace Period Public
- Licence, version 1, also included below.
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
  .
- This licence also comes with the added permission that you may link this
- program with the OpenSSL library and distribute executables, as long as you
- follow the requirements of this licence in regard to all of the software in
- the executable aside from OpenSSL.
+ You should have received a copy of the GNU General Public License along
+ with this package; if not, write to the Free Software Foundation, Inc.,
+ 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+ .
+ On Debian systems, the full text of the GNU General Public License
+ version 2 can be found in the file `/usr/share/common-licenses/GPL-2'.
 
 License: TGPPL1+
+ You may also opt to use this package under the terms of the Transitive Grace
+ Period Public License, version 1 or, at your option, any later version.
+ .
  This Transitive Grace Period Public Licence (the "License") applies to any
  original work of authorship (the "Original Work") whose owner (the "Licensor")
  has placed the following licensing notice adjacent to the copyright notice for
