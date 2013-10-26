@@ -20,14 +20,6 @@ override_dh_install:
 	rm -rf src/allmydata_tahoe.egg-info
 	mv src/allmydata_tahoe.egg-info.orig src/allmydata_tahoe.egg-info
 
-	# Clean bin/tahoe trick stolen from upstream packaging script.
-	head -1 debian/$(package)/usr/bin/tahoe > debian/$(package)/usr/bin/tahoe.new
-	echo "from allmydata.scripts import runner" >> debian/$(package)/usr/bin/tahoe.new
-	echo "runner.run()" >> debian/$(package)//usr/bin/tahoe.new
-	chmod +x debian/$(package)/usr/bin/tahoe.new
-	mv debian/$(package)/usr/bin/tahoe.new debian/$(package)/usr/bin/tahoe
-
 override_dh_installdocs:
 	dh_installdocs
-	mv debian/$(package)/usr/share/doc/$(package)/NEWS.rst \
-		debian/$(package)/usr/share/doc/$(package)/changelog
+	dh_installchangelogs -k NEWS.rst

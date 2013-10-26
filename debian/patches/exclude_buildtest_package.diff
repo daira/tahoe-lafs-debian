@@ -1,6 +1,7 @@
 Description: Exclude buildtest python package from Debian package.
  By default tahoe-lafs also install a buildtest package but this isn't relevant
  in the context of the Debian package.
+Forwarded: not-needed
 Author: bertagaz <bertagaz@ptitcanardnoir.org>
 Index: tahoe.git/setup.py
 ===================================================================
