@@ -10,7 +10,8 @@
 ### END INIT INFO
 
 # Initscript by bertagaz <bertagaz@ptitcanardnoir.org>
-# Heavily rewrote from openvpn initscript by Robert Leslie
+# Heavily reviewed by Zooko O'Whielacronx <zookog@gmail.com>
+# and intrigeri <intrigeri@boum.org>.
 
 set -e
 set -u
