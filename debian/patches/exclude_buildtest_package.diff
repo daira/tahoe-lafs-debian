@@ -1,40 +1,50 @@
-Description: Exclude buildtest python package from Debian package.
- By default tahoe-lafs also install a buildtest package but this isn't relevant
- in the context of the Debian package.
-Forwarded: not-needed
-Author: bertagaz <bertagaz@ptitcanardnoir.org>
-Index: tahoe.git/setup.py
-===================================================================
---- tahoe.git.orig/setup.py	2013-09-03 19:04:12.745099226 +0200
-+++ tahoe.git/setup.py	2013-09-03 19:04:24.637106872 +0200
-@@ -436,8 +436,7 @@
+diff --git a/setup.py b/setup.py
+index 190c339..f9e61ed 100644
+--- a/setup.py
++++ b/setup.py
+@@ -443,7 +443,7 @@ setup(name=APPNAME,
+                 'allmydata.util',
                  'allmydata.web',
-                 'allmydata.web.static',
-                 'allmydata.web.static.css',
--                'allmydata.windows',
+                 'allmydata.windows',
 -                'buildtest'],
-+                'allmydata.windows'],
++               ],
        classifiers=trove_classifiers,
        test_suite="allmydata.test",
        install_requires=install_requires,
-Index: tahoe.git/src/allmydata_tahoe.egg-info/SOURCES.txt
-===================================================================
---- tahoe.git.orig/src/allmydata_tahoe.egg-info/SOURCES.txt	2013-09-03 19:00:55.393107907 +0200
-+++ tahoe.git/src/allmydata_tahoe.egg-info/SOURCES.txt	2013-09-03 19:04:12.753100409 +0200
-@@ -422,7 +422,5 @@
+diff --git a/src/allmydata_tahoe.egg-info/SOURCES.txt b/src/allmydata_tahoe.egg-info/SOURCES.txt
+index 4df00a0..ce1a98e 100644
+--- a/src/allmydata_tahoe.egg-info/SOURCES.txt
++++ b/src/allmydata_tahoe.egg-info/SOURCES.txt
+@@ -450,6 +450,4 @@ src/allmydata_tahoe.egg-info/entry_points.txt
  src/allmydata_tahoe.egg-info/not-zip-safe
  src/allmydata_tahoe.egg-info/requires.txt
  src/allmydata_tahoe.egg-info/top_level.txt
 -src/buildtest/__init__.py
 -src/buildtest/test_build_with_fake_dist.py
- static/tahoe.py
--twisted/plugins/allmydata_trial.py
+-static/tahoe.py
 \ No newline at end of file
-+twisted/plugins/allmydata_trial.py
-Index: tahoe.git/src/allmydata_tahoe.egg-info/top_level.txt
-===================================================================
---- tahoe.git.orig/src/allmydata_tahoe.egg-info/top_level.txt	2013-09-03 19:00:55.393107907 +0200
-+++ tahoe.git/src/allmydata_tahoe.egg-info/top_level.txt	2013-09-03 19:04:12.753100409 +0200
++static/tahoe.py
+diff --git a/src/allmydata_tahoe.egg-info/requires.txt b/src/allmydata_tahoe.egg-info/requires.txt
+index 50c9fa9..0cc4c53 100644
+--- a/src/allmydata_tahoe.egg-info/requires.txt
++++ b/src/allmydata_tahoe.egg-info/requires.txt
+@@ -12,4 +12,9 @@ pyasn1 >= 0.1.4
+ pyasn1-modules >= 0.0.5
+ Twisted >= 13.0.0
+ Nevow >= 0.11.1
+-pyOpenSSL >= 0.13, <= 0.13.1
+\ No newline at end of file
++pyOpenSSL >= 0.13
++cryptography
++cffi >= 0.8
++six >= 1.4.1
++enum34
++pycparser
+\ No newline at end of file
+diff --git a/src/allmydata_tahoe.egg-info/top_level.txt b/src/allmydata_tahoe.egg-info/top_level.txt
+index bfe5ac6..38c0fb5 100644
+--- a/src/allmydata_tahoe.egg-info/top_level.txt
++++ b/src/allmydata_tahoe.egg-info/top_level.txt
 @@ -1,2 +1 @@
  allmydata
 -buildtest
