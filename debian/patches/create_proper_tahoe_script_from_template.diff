@@ -1,15 +1,8 @@
-Description: Create a proper bin/tahoe for Debian
- Upstream used to patch the bin/tahoe during a dh_install override to create a
- working tahoe script for the Debian package. Let's use a patch and keep the
- debian/rules file cleaner.
-Forwarded: not-needed
-Origin: upstream, https://tahoe-lafs.org/trac/tahoe-lafs/changeset/623d82a1302ecdad33b61864de1ebaf34bb0d959
-Author: Brian Warner <warner@lothar.com>
-Index: tahoe.git/bin/tahoe-script.template
-===================================================================
---- tahoe.git.orig/bin/tahoe-script.template	2013-10-08 14:24:02.141074127 +0200
-+++ tahoe.git/bin/tahoe-script.template	2013-10-10 14:16:27.509072780 +0200
-@@ -1,128 +1,4 @@
+diff --git a/bin/tahoe-script.template b/bin/tahoe-script.template
+index b088eaf..57d4ebc 100644
+--- a/bin/tahoe-script.template
++++ b/bin/tahoe-script.template
+@@ -1,130 +1,4 @@
 -#!/bin/false # You must specify a python interpreter.
 -import sys; assert sys.version_info < (3,), ur"Tahoe-LAFS does not run under Python 3. Please use a version of Python between 2.6 and 2.7.x inclusive."
 +#!/usr/bin/python
@@ -107,6 +100,8 @@ Index: tahoe.git/bin/tahoe-script.template
 -        prefix = [sys.executable]
 -    else:
 -        prefix = []
+-        if runner == "python":
+-            runner = sys.executable
 -
 -    def _subst(a):
 -        if a == '@tahoe': return script
