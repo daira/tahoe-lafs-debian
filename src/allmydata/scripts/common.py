@@ -3,7 +3,8 @@ import os, sys, urllib
 import codecs
 from twisted.python import usage
 from allmydata.util.assertutil import precondition
-from allmydata.util.encodingutil import unicode_to_url, quote_output, argv_to_abspath
+from allmydata.util.encodingutil import unicode_to_url, quote_output, \
+    quote_local_unicode_path, argv_to_abspath
 from allmydata.util.fileutil import abspath_expanduser_unicode
 
 
@@ -39,8 +40,8 @@ class BasedirOptions(BaseOptions):
     default_nodedir = _default_nodedir
 
     optParameters = [
-        ["basedir", "C", None, "Same as --node-directory (default %s)."
-         % get_default_nodedir()],
+        ["basedir", "C", None, "Specify which Tahoe base directory should be used. [default: %s]"
+         % quote_local_unicode_path(_default_nodedir)],
     ]
 
     def parseArgs(self, basedir=None):
@@ -66,6 +67,21 @@ class BasedirOptions(BaseOptions):
     def postOptions(self):
         if not self['basedir']:
             raise usage.UsageError("A base directory for the node must be provided.")
+
+class NoDefaultBasedirOptions(BasedirOptions):
+    default_nodedir = None
+
+    optParameters = [
+        ["basedir", "C", None, "Specify which Tahoe base directory should be used."],
+    ]
+
+    # This is overridden in order to ensure we get a "Wrong number of arguments."
+    # error when more than one argument is given.
+    def parseArgs(self, basedir=None):
+        BasedirOptions.parseArgs(self, basedir)
+
+    def getSynopsis(self):
+        return "Usage:  %s [global-opts] %s [options] NODEDIR" % (self.command_name, self.subcommand_name)
 
 
 DEFAULT_ALIAS = u"tahoe"
@@ -181,5 +197,6 @@ def get_alias(aliases, path_unicode, default):
     return uri.from_string_dirnode(aliases[alias]).to_string(), path[colon+1:]
 
 def escape_path(path):
+    # this always returns bytes, specifically US-ASCII, valid URL characters
     segments = path.split("/")
     return "/".join([urllib.quote(unicode_to_url(s)) for s in segments])

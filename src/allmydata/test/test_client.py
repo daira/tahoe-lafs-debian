@@ -1,11 +1,13 @@
-import os
+import os, sys
 from twisted.trial import unittest
 from twisted.application import service
 
 import allmydata
-from allmydata.node import OldConfigError, OldConfigOptionError, MissingConfigEntry
+from allmydata.node import Node, OldConfigError, OldConfigOptionError, MissingConfigEntry, UnescapedHashError
+from allmydata.frontends.auth import NeedRootcapLookupScheme
 from allmydata import client
 from allmydata.storage_client import StorageFarmBroker
+from allmydata.manhole import AuthorizedKeysManhole
 from allmydata.util import base32, fileutil
 from allmydata.interfaces import IFilesystemNode, IFileNode, \
      IImmutableFileNode, IMutableFileNode, IDirectoryNode
@@ -30,6 +32,29 @@ class Basic(testutil.ReallyEqualMixin, unittest.TestCase):
                            BASECONFIG)
         client.Client(basedir)
 
+    def test_comment(self):
+        should_fail = [r"test#test", r"#testtest", r"test\\#test"]
+        should_not_fail = [r"test\#test", r"test\\\#test", r"testtest"]
+
+        basedir = "test_client.Basic.test_comment"
+        os.mkdir(basedir)
+
+        def write_config(s):
+            config = ("[client]\n"
+                      "introducer.furl = %s\n" % s)
+            fileutil.write(os.path.join(basedir, "tahoe.cfg"), config)
+
+        for s in should_fail:
+            self.failUnless(Node._contains_unescaped_hash(s))
+            write_config(s)
+            self.failUnlessRaises(UnescapedHashError, client.Client, basedir)
+
+        for s in should_not_fail:
+            self.failIf(Node._contains_unescaped_hash(s))
+            write_config(s)
+            client.Client(basedir)
+
+
     @mock.patch('twisted.python.log.msg')
     def test_error_on_old_config_files(self, mock_log_msg):
         basedir = "test_client.Basic.test_error_on_old_config_files"
@@ -45,10 +70,11 @@ class Basic(testutil.ReallyEqualMixin, unittest.TestCase):
         fileutil.write(os.path.join(basedir, "debug_discard_storage"), "")
 
         e = self.failUnlessRaises(OldConfigError, client.Client, basedir)
-        self.failUnlessIn(os.path.abspath(os.path.join(basedir, "introducer.furl")), e.args[0])
-        self.failUnlessIn(os.path.abspath(os.path.join(basedir, "no_storage")), e.args[0])
-        self.failUnlessIn(os.path.abspath(os.path.join(basedir, "readonly_storage")), e.args[0])
-        self.failUnlessIn(os.path.abspath(os.path.join(basedir, "debug_discard_storage")), e.args[0])
+        abs_basedir = fileutil.abspath_expanduser_unicode(unicode(basedir)).encode(sys.getfilesystemencoding())
+        self.failUnlessIn(os.path.join(abs_basedir, "introducer.furl"), e.args[0])
+        self.failUnlessIn(os.path.join(abs_basedir, "no_storage"), e.args[0])
+        self.failUnlessIn(os.path.join(abs_basedir, "readonly_storage"), e.args[0])
+        self.failUnlessIn(os.path.join(abs_basedir, "debug_discard_storage"), e.args[0])
 
         for oldfile in ['introducer.furl', 'no_storage', 'readonly_storage',
                         'debug_discard_storage']:
@@ -149,6 +175,72 @@ class Basic(testutil.ReallyEqualMixin, unittest.TestCase):
                            "enabled = true\n" + \
                            "reserved_space = bogus\n")
         self.failUnlessRaises(ValueError, client.Client, basedir)
+
+    def test_web_staticdir(self):
+        basedir = u"client.Basic.test_web_staticdir"
+        os.mkdir(basedir)
+        fileutil.write(os.path.join(basedir, "tahoe.cfg"),
+                       BASECONFIG +
+                       "[node]\n" +
+                       "web.port = tcp:0:interface=127.0.0.1\n" +
+                       "web.static = relative\n")
+        c = client.Client(basedir)
+        w = c.getServiceNamed("webish")
+        abs_basedir = fileutil.abspath_expanduser_unicode(basedir)
+        expected = fileutil.abspath_expanduser_unicode(u"relative", abs_basedir)
+        self.failUnlessReallyEqual(w.staticdir, expected)
+
+    def test_manhole_keyfile(self):
+        basedir = u"client.Basic.test_manhole_keyfile"
+        os.mkdir(basedir)
+        fileutil.write(os.path.join(basedir, "tahoe.cfg"),
+                       BASECONFIG +
+                       "[node]\n" +
+                       "ssh.port = tcp:0:interface=127.0.0.1\n" +
+                       "ssh.authorized_keys_file = relative\n")
+        c = client.Client(basedir)
+        m = [s for s in c if isinstance(s, AuthorizedKeysManhole)][0]
+        abs_basedir = fileutil.abspath_expanduser_unicode(basedir)
+        expected = fileutil.abspath_expanduser_unicode(u"relative", abs_basedir)
+        self.failUnlessReallyEqual(m.keyfile, expected)
+
+    # TODO: also test config options for SFTP.
+
+    def test_ftp_auth_keyfile(self):
+        basedir = u"client.Basic.test_ftp_auth_keyfile"
+        os.mkdir(basedir)
+        fileutil.write(os.path.join(basedir, "tahoe.cfg"),
+                       (BASECONFIG +
+                        "[ftpd]\n"
+                        "enabled = true\n"
+                        "port = tcp:0:interface=127.0.0.1\n"
+                        "accounts.file = private/accounts\n"))
+        os.mkdir(os.path.join(basedir, "private"))
+        fileutil.write(os.path.join(basedir, "private", "accounts"), "\n")
+        c = client.Client(basedir) # just make sure it can be instantiated
+        del c
+
+    def test_ftp_auth_url(self):
+        basedir = u"client.Basic.test_ftp_auth_url"
+        os.mkdir(basedir)
+        fileutil.write(os.path.join(basedir, "tahoe.cfg"),
+                       (BASECONFIG +
+                        "[ftpd]\n"
+                        "enabled = true\n"
+                        "port = tcp:0:interface=127.0.0.1\n"
+                        "accounts.url = http://0.0.0.0/\n"))
+        c = client.Client(basedir) # just make sure it can be instantiated
+        del c
+
+    def test_ftp_auth_no_accountfile_or_url(self):
+        basedir = u"client.Basic.test_ftp_auth_no_accountfile_or_url"
+        os.mkdir(basedir)
+        fileutil.write(os.path.join(basedir, "tahoe.cfg"),
+                       (BASECONFIG +
+                        "[ftpd]\n"
+                        "enabled = true\n"
+                        "port = tcp:0:interface=127.0.0.1\n"))
+        self.failUnlessRaises(NeedRootcapLookupScheme, client.Client, basedir)
 
     def _permute(self, sb, key):
         return [ s.get_longname() for s in sb.get_servers_for_psi(key) ]
@@ -294,7 +386,7 @@ class Run(unittest.TestCase, testutil.StallMixin):
         os.mkdir(basedir)
         dummy = "pb://wl74cyahejagspqgy4x5ukrvfnevlknt@127.0.0.1:58889/bogus"
         fileutil.write(os.path.join(basedir, "tahoe.cfg"), BASECONFIG_I % dummy)
-        fileutil.write(os.path.join(basedir, "suicide_prevention_hotline"), "")
+        fileutil.write(os.path.join(basedir, client.Client.EXIT_TRIGGER_FILE), "")
         client.Client(basedir)
 
     def test_reloadable(self):
@@ -317,13 +409,13 @@ class Run(unittest.TestCase, testutil.StallMixin):
         d.addCallback(self.stall, delay=2.0)
         def _restart(res):
             # TODO: pause for slightly over one second, to let
-            # Client._check_hotline poll the file once. That will exercise
+            # Client._check_exit_trigger poll the file once. That will exercise
             # another few lines. Then add another test in which we don't
-            # update the file at all, and watch to see the node shutdown. (to
-            # do this, use a modified node which overrides Node.shutdown(),
-            # also change _check_hotline to use it instead of a raw
+            # update the file at all, and watch to see the node shutdown.
+            # (To do this, use a modified node which overrides Node.shutdown(),
+            # also change _check_exit_trigger to use it instead of a raw
             # reactor.stop, also instrument the shutdown event in an
-            # attribute that we can check)
+            # attribute that we can check.)
             c2 = client.Client(basedir)
             c2.setServiceParent(self.sparent)
             return c2.disownServiceParent()
