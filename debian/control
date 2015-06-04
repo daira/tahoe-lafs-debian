@@ -1,10 +1,10 @@
 Source: tahoe-lafs
 Section: utils
 Priority: optional
-Maintainer: Bert Agaz <bertagaz@ptitcanardnoir.org>
-Uploaders: Micah Anderson <micah@debian.org>
+Maintainer: Ramakrishnan Muthukrishnan <rkrishnan@debian.org>
+Uploaders: Micah Anderson <micah@debian.org>, Bert Agaz <bertagaz@ptitcanardnoir.org>
 Build-Depends: debhelper (>= 9), python-setuptools, python-all (>= 2.6.6-3~),
- python-twisted
+ python-twisted (>= 13.0.0)
 Standards-Version: 3.9.5
 Vcs-Git: git://anonscm.debian.org/tahoe/tahoe.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=tahoe/tahoe.git
@@ -12,12 +12,12 @@ Homepage: http://tahoe-lafs.org/trac/tahoe
 
 Package: tahoe-lafs
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-pyasn1, python-crypto,
- python-foolscap (>= 0.6.3), python-openssl, python-nevow, python-simplejson,
- python-zfec, python-pycryptopp (>= 0.5.29), python-setuptools, python-mock,
- python-twisted, net-tools
-Description: Secure distributed filesystem
- Tahoe, the Least Authority File System, is a distributed filesystem that
+Depends: ${misc:Depends}, ${python:Depends}, python-pyasn1 (>= 0.1.4), python-crypto (>= 2.6),
+ python-foolscap (>= 0.8.0), python-openssl (>= 0.14), python-nevow (>= 0.11.1), python-simplejson (>= 1.4),
+ python-zfec (>= 1.1.0), python-pycryptopp (>= 0.6.0), python-setuptools, python-mock,
+ python-twisted (>= 13.0.0), net-tools
+Description: Secure distributed File Store
+ Tahoe, the Least Authority File Store, is a distributed filesystem that
  features high reliability, strong security properties, and a fine-grained
  sharing model. Files are encrypted, signed, erasure-coded, then distributed
  over multiple servers, such that any (configurable) subset of the servers
