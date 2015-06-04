@@ -1,6 +1,189 @@
-﻿==================================
+﻿.. -*- coding: utf-8-with-signature -*-
+
+==================================
 User-Visible Changes in Tahoe-LAFS
 ==================================
+
+Release 1.10.1 (XXXX-XX-XX)
+'''''''''''''''''''''''''''
+
+Unedited list of all changes after 1.10.0 and up-to 143af61 17-May-2015. This
+list is not yet limited to user-visible ones. It (hopefully) includes all
+tickets closed during this time, even minor non-user-visible ones.
+
+- show git branch in version output #1953
+- packaging fixes #1969 #1960
+- mutable/retrieve: raise NotEnoughSharesError earlier when the sharemap says
+  it's useless, and improve the error message #1742
+- improve user feedback when filing an Incident Report #1974
+- add page-rendering timestamp to WUI #1972
+- improve what-is-my-ipv4 on windows/cygwin #1381
+- remove unused 'human encoding' URI methods #1807
+- check/deep-check learned to accept multiple location args #740
+- tests warn if tree is dirty #1992
+- Travis-CI turned on #2249
+- py2.6 is now unsupported on windows
+- add 'distclean', don't remove egg-info during 'make clean' #2092
+- add "UTF-8 BOM" to all docs #1948
+- various docs cleanups/improvements
+- improve safety of timing_safe_compare() #2165
+- checker reports: remove needs-rebalancing, add count-happiness #1784 #2105
+- improve packaging under pip #2209
+- remove old darcs tooling
+- minor comments #1874 #2086
+- switch to unminified d3/jquery JS files #2208
+- improve test #2048
+- reject furlfiles with "#" #2128
+- rename exit-trigger/self-destruct test feature #1336
+- add coverage.io test-coverage reporting #623
+- hush warnings during dep-checking, stop complaining about missing
+  "service_identity" dep #2248
+- dedup license info in about.rst/README.txt #2067
+- 'tahoe cp -r' copies the top-level directory into new dir #712
+- log roothash in base32 not binary #1800
+- improve welcome page CSS for narrow windows #1931
+- redesign WUI directory pages #1966
+- improve upload tests #2008
+- remove obsolete debian packaging tools #2282
+- add --coverage to setup.py test #1698, remove old coverage uploaders
+- remove trialcoverage plugin #2281
+- tolerate disk-space-used=0 for travis boxes #2290
+- tolerate python subprocess bug #2023
+- remove old build_helpers tools #2305
+- fix "Download" button on welcome page #1901
+- update zetuptoolz
+- hack windows/OpenSSL deps on windows #2249 #2193
+- WAPI: do not report 'size' metadata when unknown #1634
+- new OS-X packaging #182
+- stop using contents of .tac files #1159
+- improve version-number reporting #2340
+- add per-server "(space) Available" column to welcome page #648
+- add public-key auth to SFTP server #1411
+- `tahoe cp -r` changes w.r.t. unnamed directories #2329
+- tolerate PEP440 semantics in dependency specifications #2354
+- replace WUI icons with distinct shapes for accessibility #1961
+- hush DeprecationWarning with twisted.web #2312
+- fix race condition during mutable upload
+- fix handling of long paths on windows #2235 #1674 #2027
+- fix MANIFEST.in warnings #2380
+- use "AUTO" in tahoe.cfg/node/tub.location to mean autodetect IP addresses.
+  Can be combined with static addresses, or turned off entirely. #754
+- 'tahoe cp -r': fix exception #2329
+- put version string into name of OS-X package: #2393
+- improve unicode handling of arguments to (S)FTPServer #2388
+- improve tests of test_mutable #2034
+- fix ftp 'ls' to work with Twisted-15.0.0 #2394
+- add docs/proposed/magic-folder
+- remove named-path upload/download from control-port #1737
+- unicode handling on windows something #2398
+- depend on foolscap >= 0.8.0, which makes better keys #2400
+- zetuptoolz: tolerate single-string requirespec #2242
+- add icon for OS-X/windows #2323
+- initial Docker support PR#165
+- accept newer Twisted (>=13) on windows if pywin32 is manually installed #2416
+- windows: find home directory on multiple versions of windows #2417
+- improve fileutil something #1531
+
+all tickets noted as closed: 1953 1960 1974 1972 1717 1381 898 1707 1918 1807
+740 1842 1992 2165 1847 2086 2208 2048 2128 2245 1336 2248 2067 712 1800 1966
+2008 2282 2281 2290 2023 2121? 2305 1901 2249 2193 1634 1159 2340 1146 648
+1411 2354 1961 2380 754 2393 2394 1737 2398 2400 2242 2416 2415 2417 1969
+1988 1784 2105 2209 2280 623 2249 1698 2028 2005 2312 2235 1674 2027 2034
+2323
+
+tickets referenced but not closed: 1834 1742 982 1064 1536 1935 666 1931 1258
+182 2286 1531
+
+PRs noted as closed: 62 48 57 61 62 63 64 69 73 81 82 84 85 87 91 94 95 96
+103 56 32 50 107 109 114 112 120 122 125 126 133 135 136 137 142 146 149 152
+165
+
+- "tahoe cp" changes:
+
+There are many "cp"-like tools in the unix world (POSIX /bin/cp, the "scp"
+provided by SSH, rsync). They each behave slightly differently in unusual
+circumstances, generally dealing with copying whole directories at a time,
+into a target which may or may not exist already. The usual question is
+whether the user is referring to the source directory as a whole, or to its
+contents. For example, should "cp -r foodir bardir" create a new directory
+named "bardir/foodir"? Or should it behave more like "cp -r foodir/* bardir"?
+Some tools use the presence of a trailing slash to indicate which behavior
+you want. Others ignore trailing slashes.
+
+"tahoe cp" is no exception to having exceptional cases. This release fixes
+some bad behavior and attempts to establish a consistent rationale for its
+behavior.
+
+The new rule is:
+
+- If the thing being copied is a directory, and it has a name (e.g. it's not
+  a raw tahoe directorycap), then you are referring to the directory itself.
+- If the thing being copied is an unnamed directory (e.g. raw dircap or
+  alias), then you are referring to the contents.
+- Trailing slashes do not affect the behavior of the copy (although putting a
+  trailing slash on a file-like target is an error).
+- The "-r" (--recursive) flag does not affect the behavior of the copy
+  (although omitting -r when the source is a directory is an error).
+- If the target refers to something that does not yet exist:
+  - and if the source is a single file, then create a new file;
+  - otherwise, create a directory.
+
+There are two main cases where the behavior of tahoe-1.10.1 differs from that
+of the 1.10.0 release:
+
+- "cp DIRCAP/file.txt ./local/missing" , where "./local" is a directory but
+  "./local/missing" does not exist. The implication is that you want tahoe to
+  create a new file named "./local/missing" and fill it with the contents of
+  the tahoe-side DIRCAP/file.txt. In 1.10.0, a plain "cp" would do just this,
+  but "cp -r" would do "mkdir ./local/missing" and then create a file named
+  "./local/missing/file.txt". In 1.10.1, both "cp" and "cp -r" create a file
+  named "./local/missing".
+- "cp -r PARENTCAP/dir ./local/missing", where PARENTCAP/dir/ contains
+  "file.txt", and again "./local" is a directory but "./local/missing" does
+  not exist. In both 1.10.0 and 1.10.1, this first does "mkdir
+  ./local/missing". In 1.10.0, it would then copy the contents of the source
+  directory into the new directory, resulting in "./local/missing/file.txt".
+  In 1.10.1, following the new rule of "a named directory source refers to
+  the directory itself", the tool creates "./local/missing/dir/file.txt".
+
+
+Compatibility and Dependency Updates
+------------------------------------
+
+- Twisted >= 13.0.0
+- Nevow >= 0.11.1
+- foolscap >= 0.8.0
+- service-identity
+- characteristic >= 14.0.0
+- pyasn1 >= 0.1.4
+- pyasn1-modules >= 0.0.5
+
+On Windows, if pywin32 is not installed then the dependencies on Twisted
+and Nevow become:
+
+- Twisted >= 11.1.0, <= 12.1.0
+- Nevow >= 0.9.33, <= 0.10
+
+On all platforms, if pyOpenSSL >= 0.14 is installed, then it will be used,
+but if not then only pyOpenSSL >= 0.13, <= 0.13.1 will be built when directly
+invoking `setup.py build` or `setup.py install`.
+
+We strongly advise OS packagers to take the option of making a tahoe-lafs
+package depend on pyOpenSSL >= 0.14. In order for that to work, the following
+additional Python dependencies are needed:
+
+- cryptography
+- cffi >= 0.8
+- six >= 1.4.1
+- enum34
+- pycparser
+
+as well as libffi (for Debian/Ubuntu, the name of the needed OS package is
+`libffi6`).
+
+Tahoe-LAFS is now compatible with setuptools version 8 and pip version 6
+or later.
+
 
 Release 1.10.0 (2013-05-01)
 '''''''''''''''''''''''''''

@@ -1,10 +1,13 @@
 import os, re, base64
 from cStringIO import StringIO
+
 from twisted.trial import unittest
 from twisted.internet import defer, reactor
+
 from allmydata import uri, client
 from allmydata.nodemaker import NodeMaker
 from allmydata.util import base32, consumer, fileutil, mathutil
+from allmydata.util.fileutil import abspath_expanduser_unicode
 from allmydata.util.hashutil import tagged_hash, ssk_writekey_hash, \
      ssk_pubkey_fingerprint_hash
 from allmydata.util.consumer import MemoryConsumer
@@ -1328,6 +1331,24 @@ class Roundtrip(unittest.TestCase, testutil.ShouldFailMixin, PublishMixin):
                                  self.do_download, servermap)
             return d1
         d.addCallback(_remove_shares)
+        return d
+
+    def test_all_but_two_shares_vanished_updated_servermap(self):
+        # tests error reporting for ticket #1742
+        d = self.make_servermap()
+        def _remove_shares(servermap):
+            self._version = servermap.best_recoverable_version()
+            for shares in self._storage._peers.values()[2:]:
+                shares.clear()
+            return self.make_servermap(servermap)
+        d.addCallback(_remove_shares)
+        def _check(updated_servermap):
+            d1 = self.shouldFail(NotEnoughSharesError,
+                                 "test_all_but_two_shares_vanished_updated_servermap",
+                                 "ran out of servers",
+                                 self.do_download, updated_servermap, version=self._version)
+            return d1
+        d.addCallback(_check)
         return d
 
     def test_no_servers(self):
@@ -3092,7 +3113,7 @@ class Version(GridTestMixin, unittest.TestCase, testutil.ShouldFailMixin, \
             fso = debug.FindSharesOptions()
             storage_index = base32.b2a(n.get_storage_index())
             fso.si_s = storage_index
-            fso.nodedirs = [unicode(os.path.dirname(os.path.abspath(storedir)))
+            fso.nodedirs = [os.path.dirname(abspath_expanduser_unicode(unicode(storedir)))
                             for (i,ss,storedir)
                             in self.iterate_servers()]
             fso.stdout = StringIO()
@@ -3416,7 +3437,7 @@ class Update(GridTestMixin, unittest.TestCase, testutil.ShouldFailMixin):
     def setUp(self):
         GridTestMixin.setUp(self)
         self.basedir = self.mktemp()
-        self.set_up_grid()
+        self.set_up_grid(num_servers=13)
         self.c = self.g.clients[0]
         self.nm = self.c.nodemaker
         self.data = "testdata " * 100000 # about 900 KiB; MDMF

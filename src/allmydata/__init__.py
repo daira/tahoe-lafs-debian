@@ -15,9 +15,19 @@ __version__ = "unknown"
 try:
     from allmydata._version import __version__
 except ImportError:
-    # We're running in a tree that hasn't run "./setup.py darcsver", and didn't
-    # come with a _version.py, so we don't know what our version is. This should
-    # not happen very often.
+    # We're running in a tree that hasn't run update_version, and didn't
+    # come with a _version.py, so we don't know what our version is.
+    # This should not happen very often.
+    pass
+
+full_version = "unknown"
+branch = "unknown"
+try:
+    from allmydata._version import full_version, branch
+except ImportError:
+    # We're running in a tree that hasn't run update_version, and didn't
+    # come with a _version.py, so we don't know what our full version or
+    # branch is. This should not happen very often.
     pass
 
 __appname__ = "unknown"
@@ -96,24 +106,25 @@ def get_linux_distro():
     if _distname and _version:
         return (_distname, _version)
 
-    try:
-        p = subprocess.Popen(["lsb_release", "--all"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        rc = p.wait()
-        if rc == 0:
-            for line in p.stdout.readlines():
-                m = _distributor_id_cmdline_re.search(line)
-                if m:
-                    _distname = m.group(1).strip()
-                    if _distname and _version:
-                        return (_distname, _version)
+    if os.path.isfile("/usr/bin/lsb_release") or os.path.isfile("/bin/lsb_release"):
+        try:
+            p = subprocess.Popen(["lsb_release", "--all"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            rc = p.wait()
+            if rc == 0:
+                for line in p.stdout.readlines():
+                    m = _distributor_id_cmdline_re.search(line)
+                    if m:
+                        _distname = m.group(1).strip()
+                        if _distname and _version:
+                            return (_distname, _version)
 
-                m = _release_cmdline_re.search(p.stdout.read())
-                if m:
-                    _version = m.group(1).strip()
-                    if _distname and _version:
-                        return (_distname, _version)
-    except EnvironmentError:
-        pass
+                    m = _release_cmdline_re.search(p.stdout.read())
+                    if m:
+                        _version = m.group(1).strip()
+                        if _distname and _version:
+                            return (_distname, _version)
+        except EnvironmentError:
+            pass
 
     if os.path.exists("/etc/arch-release"):
         return ("Arch_Linux", "")
@@ -145,7 +156,7 @@ def normalized_version(verstr, what=None):
 def get_package_versions_and_locations():
     import warnings
     from _auto_deps import package_imports, global_deprecation_messages, deprecation_messages, \
-        user_warning_messages, runtime_warning_messages, warning_imports
+        runtime_warning_messages, warning_imports
 
     def package_dir(srcfile):
         return os.path.dirname(os.path.dirname(os.path.normcase(os.path.realpath(srcfile))))
@@ -155,13 +166,13 @@ def get_package_versions_and_locations():
     # or any other bug that causes sys.path to be set up incorrectly. Therefore we
     # must import the packages in order to check their versions and paths.
 
-    # This is to suppress various DeprecationWarnings, UserWarnings, and RuntimeWarnings
+    # This is to suppress all UserWarnings and various DeprecationWarnings and RuntimeWarnings
     # (listed in _auto_deps.py).
+
+    warnings.filterwarnings("ignore", category=UserWarning, append=True)
 
     for msg in global_deprecation_messages + deprecation_messages:
         warnings.filterwarnings("ignore", category=DeprecationWarning, message=msg, append=True)
-    for msg in user_warning_messages:
-        warnings.filterwarnings("ignore", category=UserWarning, message=msg, append=True)
     for msg in runtime_warning_messages:
         warnings.filterwarnings("ignore", category=RuntimeWarning, message=msg, append=True)
     try:
@@ -171,14 +182,23 @@ def get_package_versions_and_locations():
             except ImportError:
                 pass
     finally:
-        # Leave suppressions for global_deprecation_messages active.
-        for ign in runtime_warning_messages + user_warning_messages + deprecation_messages:
+        # Leave suppressions for UserWarnings and global_deprecation_messages active.
+        for ign in runtime_warning_messages + deprecation_messages:
             warnings.filters.pop()
 
     packages = []
 
-    def get_version(module, attr):
-        return str(getattr(module, attr, 'unknown'))
+    def get_version(module):
+        if hasattr(module, '__version__'):
+            return str(getattr(module, '__version__'))
+        elif hasattr(module, 'version'):
+            ver = getattr(module, 'version')
+            if isinstance(ver, tuple):
+                return '.'.join(map(str, ver))
+            else:
+                return str(ver)
+        else:
+            return 'unknown'
 
     for pkgname, modulename in [(__appname__, 'allmydata')] + package_imports:
         if modulename:
@@ -191,10 +211,12 @@ def get_package_versions_and_locations():
                 packages.append( (pkgname, (None, None, trace_info)) )
             else:
                 comment = None
-                if pkgname == 'setuptools' and hasattr(module, '_distribute'):
+                if pkgname == __appname__:
+                    comment = "%s: %s" % (branch, full_version)
+                elif pkgname == 'setuptools' and hasattr(module, '_distribute'):
                     # distribute does not report its version in any module variables
                     comment = 'distribute'
-                packages.append( (pkgname, (get_version(module, '__version__'), package_dir(module.__file__), comment)) )
+                packages.append( (pkgname, (get_version(module), package_dir(module.__file__), comment)) )
         elif pkgname == 'python':
             packages.append( (pkgname, (platform.python_version(), sys.executable, None)) )
         elif pkgname == 'platform':
@@ -204,11 +226,10 @@ def get_package_versions_and_locations():
 
 
 def check_requirement(req, vers_and_locs):
-    # TODO: check [] options
-    # We support only disjunctions of <=, >=, and ==
+    # We support only conjunctions of <=, >=, and !=
 
     reqlist = req.split(',')
-    name = reqlist[0].split('<=')[0].split('>=')[0].split('==')[0].strip(' ').split('[')[0]
+    name = reqlist[0].split('<=')[0].split('>=')[0].split('!=')[0].strip(' ').split('[')[0]
     if name not in vers_and_locs:
         raise PackagingError("no version info for %s" % (name,))
     if req.strip(' ') == name:
@@ -221,33 +242,38 @@ def check_requirement(req, vers_and_locs):
         return
     actualver = normalized_version(actual, what="actual version %r of %s from %r" % (actual, name, location))
 
+    if not match_requirement(req, reqlist, actualver):
+        msg = ("We require %s, but could only find version %s.\n" % (req, actual))
+        if location and location != 'unknown':
+            msg += "The version we found is from %r.\n" % (location,)
+        msg += ("To resolve this problem, uninstall that version, either using your\n"
+                "operating system's package manager or by moving aside the directory.")
+        raise PackagingError(msg)
+
+
+def match_requirement(req, reqlist, actualver):
     for r in reqlist:
         s = r.split('<=')
         if len(s) == 2:
             required = s[1].strip(' ')
-            if actualver <= normalized_version(required, what="required maximum version %r in %r" % (required, req)):
-                return  # maximum requirement met
+            if not (actualver <= normalized_version(required, what="required maximum version %r in %r" % (required, req))):
+                return False  # maximum requirement not met
         else:
             s = r.split('>=')
             if len(s) == 2:
                 required = s[1].strip(' ')
-                if actualver >= normalized_version(required, what="required minimum version %r in %r" % (required, req)):
-                    return  # minimum requirement met
+                if not (actualver >= normalized_version(required, what="required minimum version %r in %r" % (required, req))):
+                    return False  # minimum requirement not met
             else:
-                s = r.split('==')
+                s = r.split('!=')
                 if len(s) == 2:
                     required = s[1].strip(' ')
-                    if actualver == normalized_version(required, what="required exact version %r in %r" % (required, req)):
-                        return  # exact requirement met
+                    if not (actualver != normalized_version(required, what="excluded version %r in %r" % (required, req))):
+                        return False  # not-equal requirement not met
                 else:
                     raise PackagingError("no version info or could not understand requirement %r" % (req,))
 
-    msg = ("We require %s, but could only find version %s.\n" % (req, actual))
-    if location and location != 'unknown':
-        msg += "The version we found is from %r.\n" % (location,)
-    msg += ("To resolve this problem, uninstall that version, either using your\n"
-            "operating system's package manager or by moving aside the directory.")
-    raise PackagingError(msg)
+    return True
 
 
 _vers_and_locs_list = get_package_versions_and_locations()
@@ -268,10 +294,10 @@ def cross_check_pkg_resources_versus_import():
 def cross_check(pkg_resources_vers_and_locs, imported_vers_and_locs_list):
     """This function returns a list of errors due to any failed cross-checks."""
 
+    from _auto_deps import not_import_versionable, ignorable
+
     errors = []
-    not_pkg_resourceable = set(['python', 'platform', __appname__.lower()])
-    not_import_versionable = set(['zope.interface', 'mock', 'pyasn1'])
-    ignorable = set(['argparse', 'pyutil', 'zbase32', 'distribute', 'twisted-web', 'twisted-core', 'twisted-conch'])
+    not_pkg_resourceable = ['python', 'platform', __appname__.lower()]
 
     for name, (imp_ver, imp_loc, imp_comment) in imported_vers_and_locs_list:
         name = name.lower()

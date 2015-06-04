@@ -14,7 +14,7 @@ from allmydata.interfaces import IFileNode
 from allmydata.web import filenode, directory, unlinked, status, operations
 from allmydata.web import storage
 from allmydata.web.common import abbreviate_size, getxmlfile, WebError, \
-     get_arg, RenderMixin, get_format, get_mutable_type
+     get_arg, RenderMixin, get_format, get_mutable_type, TIME_FORMAT
 
 
 class URIHandler(RenderMixin, rend.Page):
@@ -123,7 +123,7 @@ class IncidentReporter(RenderMixin, rend.Page):
                 details=get_arg(req, "details", ""),
                 level=log.WEIRD, umid="LkD9Pw")
         req.setHeader("content-type", "text/plain")
-        return "Thank you for your report!"
+        return "An incident report has been saved to logs/incidents/ in the node directory."
 
 SPACE = u"\u00A0"*2
 
@@ -131,6 +131,12 @@ class Root(rend.Page):
 
     addSlash = True
     docFactory = getxmlfile("welcome.xhtml")
+
+    _connectedalts = {
+        "not-configured": "Not Configured",
+        "yes": "Connected",
+        "no": "Disconnected",
+        }
 
     def __init__(self, client, clock=None):
         rend.Page.__init__(self, client)
@@ -164,6 +170,8 @@ class Root(rend.Page):
     #child_server # let's reserve this for storage-server-over-HTTP
 
     # FIXME: This code is duplicated in root.py and introweb.py.
+    def data_rendered_at(self, ctx, data):
+        return time.strftime(TIME_FORMAT, time.localtime())
     def data_version(self, ctx, data):
         return get_package_versions_string()
     def data_import_path(self, ctx, data):
@@ -220,6 +228,9 @@ class Root(rend.Page):
             return "yes"
         return "no"
 
+    def data_connected_to_introducer_alt(self, ctx, data):
+        return self._connectedalts[self.data_connected_to_introducer(ctx, data)]
+
     def data_helper_furl_prefix(self, ctx, data):
         try:
             uploader = self.client.getServiceNamed("uploader")
@@ -249,6 +260,9 @@ class Root(rend.Page):
         if connected:
             return "yes"
         return "no"
+
+    def data_connected_to_helper_alt(self, ctx, data):
+        return self._connectedalts[self.data_connected_to_helper(ctx, data)]
 
     def data_known_storage_servers(self, ctx, data):
         sb = self.client.get_storage_broker()
@@ -286,10 +300,14 @@ class Root(rend.Page):
         announcement = server.get_announcement()
         version = announcement["my-version"]
         service_name = announcement["service-name"]
-
-        TIME_FORMAT = "%H:%M:%S %d-%b-%Y"
+        available_space = server.get_available_space()
+        if available_space is None:
+            available_space = "N/A"
+        else:
+            available_space = abbreviate_size(available_space)
         ctx.fillSlots("address", addr)
         ctx.fillSlots("connected", connected)
+        ctx.fillSlots("connected_alt", self._connectedalts[connected])
         ctx.fillSlots("connected-bool", bool(rhost))
         ctx.fillSlots("since", time.strftime(TIME_FORMAT,
                                              time.localtime(since)))
@@ -297,6 +315,7 @@ class Root(rend.Page):
                                                  time.localtime(announced)))
         ctx.fillSlots("version", version)
         ctx.fillSlots("service_name", service_name)
+        ctx.fillSlots("available_space", available_space)
 
         return ctx.tag
 
@@ -383,6 +402,6 @@ class Root(rend.Page):
             T.input(type="hidden", name="t", value="report-incident"),
             "What went wrong?"+SPACE,
             T.input(type="text", name="details"), SPACE,
-            T.input(type="submit", value=u"Report \u00BB"),
+            T.input(type="submit", value=u"Save \u00BB"),
             ]]
         return T.div[form]
