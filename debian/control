@@ -12,11 +12,12 @@ Homepage: http://tahoe-lafs.org/trac/tahoe
 
 Package: tahoe-lafs
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-pyasn1 (>= 0.1.4), python-crypto (>= 2.6),
- python-foolscap (>= 0.8.0), python-openssl (>= 0.14), python-nevow (>= 0.11.1), python-simplejson (>= 1.4),
- python-zfec (>= 1.1.0), python-pycryptopp (>= 0.6.0), python-setuptools, python-mock,
+Depends: ${misc:Depends}, ${python:Depends}, python-pyasn1 (>= 0.1.4),
+ python-crypto (>= 2.6), python-foolscap (>= 0.8.0), python-openssl (>= 0.14),
+ python-nevow (>= 0.11.1), python-simplejson (>= 1.4), python-zfec (>= 1.1.0),
+ python-pycryptopp (>= 0.6.0), python-setuptools, python-mock (>= 0.8.0),
  python-twisted (>= 13.0.0), net-tools
-Description: Secure distributed File Store
+Description: Secure distributed file store
  Tahoe, the Least Authority File Store, is a distributed filesystem that
  features high reliability, strong security properties, and a fine-grained
  sharing model. Files are encrypted, signed, erasure-coded, then distributed
