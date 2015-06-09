@@ -1,3 +1,9 @@
+tahoe-lafs (1.10.1b1-1) unstable; urgency=medium
+
+  * New upstream beta release (1.10.1b1)
+
+ -- Ramakrishnan Muthukrishnan <rkrishnan@debian.org>  Wed, 10 Jun 2015 02:43:06 +0530
+
 tahoe-lafs (1.10.1a1-1) unstable; urgency=medium
 
   * New upstream alpha release (1.10.1a1)
