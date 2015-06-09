@@ -7,114 +7,46 @@ User-Visible Changes in Tahoe-LAFS
 Release 1.10.1 (XXXX-XX-XX)
 '''''''''''''''''''''''''''
 
-Unedited list of all changes after 1.10.0 and up-to 143af61 17-May-2015. This
-list is not yet limited to user-visible ones. It (hopefully) includes all
-tickets closed during this time, even minor non-user-visible ones.
+UI / Configuration Changes
+--------------------------
 
-- show git branch in version output #1953
-- packaging fixes #1969 #1960
-- mutable/retrieve: raise NotEnoughSharesError earlier when the sharemap says
-  it's useless, and improve the error message #1742
-- improve user feedback when filing an Incident Report #1974
-- add page-rendering timestamp to WUI #1972
-- improve what-is-my-ipv4 on windows/cygwin #1381
-- remove unused 'human encoding' URI methods #1807
-- check/deep-check learned to accept multiple location args #740
-- tests warn if tree is dirty #1992
-- Travis-CI turned on #2249
-- py2.6 is now unsupported on windows
-- add 'distclean', don't remove egg-info during 'make clean' #2092
-- add "UTF-8 BOM" to all docs #1948
-- various docs cleanups/improvements
-- improve safety of timing_safe_compare() #2165
-- checker reports: remove needs-rebalancing, add count-happiness #1784 #2105
-- improve packaging under pip #2209
-- remove old darcs tooling
-- minor comments #1874 #2086
-- switch to unminified d3/jquery JS files #2208
-- improve test #2048
-- reject furlfiles with "#" #2128
-- rename exit-trigger/self-destruct test feature #1336
-- add coverage.io test-coverage reporting #623
-- hush warnings during dep-checking, stop complaining about missing
-  "service_identity" dep #2248
-- dedup license info in about.rst/README.txt #2067
-- 'tahoe cp -r' copies the top-level directory into new dir #712
-- log roothash in base32 not binary #1800
-- improve welcome page CSS for narrow windows #1931
-- redesign WUI directory pages #1966
-- improve upload tests #2008
-- remove obsolete debian packaging tools #2282
-- add --coverage to setup.py test #1698, remove old coverage uploaders
-- remove trialcoverage plugin #2281
-- tolerate disk-space-used=0 for travis boxes #2290
-- tolerate python subprocess bug #2023
-- remove old build_helpers tools #2305
-- fix "Download" button on welcome page #1901
-- update zetuptoolz
-- hack windows/OpenSSL deps on windows #2249 #2193
-- WAPI: do not report 'size' metadata when unknown #1634
-- new OS-X packaging #182
-- stop using contents of .tac files #1159
-- improve version-number reporting #2340
-- add per-server "(space) Available" column to welcome page #648
-- add public-key auth to SFTP server #1411
-- `tahoe cp -r` changes w.r.t. unnamed directories #2329
-- tolerate PEP440 semantics in dependency specifications #2354
-- replace WUI icons with distinct shapes for accessibility #1961
-- hush DeprecationWarning with twisted.web #2312
-- fix race condition during mutable upload
-- fix handling of long paths on windows #2235 #1674 #2027
-- fix MANIFEST.in warnings #2380
-- use "AUTO" in tahoe.cfg/node/tub.location to mean autodetect IP addresses.
-  Can be combined with static addresses, or turned off entirely. #754
-- 'tahoe cp -r': fix exception #2329
-- put version string into name of OS-X package: #2393
-- improve unicode handling of arguments to (S)FTPServer #2388
-- improve tests of test_mutable #2034
-- fix ftp 'ls' to work with Twisted-15.0.0 #2394
-- add docs/proposed/magic-folder
-- remove named-path upload/download from control-port #1737
-- unicode handling on windows something #2398
-- depend on foolscap >= 0.8.0, which makes better keys #2400
-- zetuptoolz: tolerate single-string requirespec #2242
-- add icon for OS-X/windows #2323
-- initial Docker support PR#165
-- accept newer Twisted (>=13) on windows if pywin32 is manually installed #2416
-- windows: find home directory on multiple versions of windows #2417
-- improve fileutil something #1531
+The "tahoe cp" CLI command's "--recursive" option is now more predictable,
+but behaves slightly differently than before. See below for details. Tickets
+#712, #2329.
 
-all tickets noted as closed: 1953 1960 1974 1972 1717 1381 898 1707 1918 1807
-740 1842 1992 2165 1847 2086 2208 2048 2128 2245 1336 2248 2067 712 1800 1966
-2008 2282 2281 2290 2023 2121? 2305 1901 2249 2193 1634 1159 2340 1146 648
-1411 2354 1961 2380 754 2393 2394 1737 2398 2400 2242 2416 2415 2417 1969
-1988 1784 2105 2209 2280 623 2249 1698 2028 2005 2312 2235 1674 2027 2034
-2323
+The SFTP server can now use public-key authentication (instead of only
+password-based auth). Public keys are configured through an "account file",
+just like passwords. See docs/frontends/FTP-and-SFTP for examples of the
+format. #1411
 
-tickets referenced but not closed: 1834 1742 982 1064 1536 1935 666 1931 1258
-182 2286 1531
+The Tahoe node can now be configured to disable automatic IP-address
+detection. Using "AUTO" in tahoe.cfg [node]tub.location= (which is now the
+default) triggers autodetection. Omit "AUTO" to disable autodetection. "AUTO"
+can be combined with static addresses to e.g. use both a stable
+UPnP-configured tunneled address with a DHCP-assigned dynamic (local subnet
+only) address. See configuration.rst for details. #754
 
-PRs noted as closed: 62 48 57 61 62 63 64 69 73 81 82 84 85 87 91 94 95 96
-103 56 32 50 107 109 114 112 120 122 125 126 133 135 136 137 142 146 149 152
-165
+The web-based user interface ("WUI") Directory and Welcome pages have been
+redesigned, with improved CSS for narrow windows and more-accessible icons
+(using distinctive shapes instead of just colors). #1931 #1961 #1966 #1972
+#1901
 
-- "tahoe cp" changes:
+"tahoe cp" changes
+------------------
 
-There are many "cp"-like tools in the unix world (POSIX /bin/cp, the "scp"
-provided by SSH, rsync). They each behave slightly differently in unusual
-circumstances, generally dealing with copying whole directories at a time,
-into a target which may or may not exist already. The usual question is
-whether the user is referring to the source directory as a whole, or to its
-contents. For example, should "cp -r foodir bardir" create a new directory
-named "bardir/foodir"? Or should it behave more like "cp -r foodir/* bardir"?
-Some tools use the presence of a trailing slash to indicate which behavior
-you want. Others ignore trailing slashes.
+The many "cp"-like tools in the unix world (POSIX /bin/cp, the "scp" provided
+by SSH, rsync) all behave slightly differently in unusual circumstances,
+especially when copying whole directories into a target which may or may not
+already exist. The most common difference is whether the user is referring to
+the source directory as a whole, or to its contents. For example, should
+"cp -r foodir bardir" create a new directory named "bardir/foodir"? Or should
+it behave more like "cp -r foodir/* bardir"? Some tools use the presence of a
+trailing slash to indicate which behavior you want. Others ignore trailing
+slashes.
 
 "tahoe cp" is no exception to having exceptional cases. This release fixes
 some bad behavior and attempts to establish a consistent rationale for its
-behavior.
-
-The new rule is:
+behavior. The new rule is:
 
 - If the thing being copied is a directory, and it has a name (e.g. it's not
   a raw tahoe directorycap), then you are referring to the directory itself.
@@ -129,7 +61,7 @@ The new rule is:
   - otherwise, create a directory.
 
 There are two main cases where the behavior of tahoe-1.10.1 differs from that
-of the 1.10.0 release:
+of the previous 1.10.0 release:
 
 - "cp DIRCAP/file.txt ./local/missing" , where "./local" is a directory but
   "./local/missing" does not exist. The implication is that you want tahoe to
@@ -146,9 +78,13 @@ of the 1.10.0 release:
   In 1.10.1, following the new rule of "a named directory source refers to
   the directory itself", the tool creates "./local/missing/dir/file.txt".
 
-
 Compatibility and Dependency Updates
 ------------------------------------
+
+Windows now requires python2.7 . Unix/OS-X platforms can still use either 2.6
+or 2.7, however this is probably the last release that will support 2.6 (it
+is no longer receiving security updates, and most OS distributions have
+switched to 2.7). Tahoe now has the following dependencies:
 
 - Twisted >= 13.0.0
 - Nevow >= 0.11.1
@@ -181,8 +117,52 @@ additional Python dependencies are needed:
 as well as libffi (for Debian/Ubuntu, the name of the needed OS package is
 `libffi6`).
 
-Tahoe-LAFS is now compatible with setuptools version 8 and pip version 6
-or later.
+Tahoe-LAFS is now compatible with Setuptools version 8 and Pip version 6 or
+later, which should fix execution on Ubuntu 15.04 (it now tolerates PEP440
+semantics in dependency specifications). #2354 #2242
+
+Tahoe-LAFS now depends upon foolscap-0.8.0, which creates better private keys
+and certificates than previous versions. To benefit from the improvements
+(2048-bit RSA keys and SHA256-based certificates), you must re-generate your
+Tahoe nodes (which changes their TubIDs and FURLs). #2400
+
+Packaging
+---------
+
+A preliminary OS-X package, named "tahoe-lafs-VERSION-osx.pkg", is now being
+generated. It is a standard double-clickable installer, which creates
+/Applications/tahoe.app that embeds a complete runtime tree. However
+launching the .app only brings up docs on how to run tahoe from the command
+line. A future release will turn this into a fully-fledged application
+launcher. #182 #2393 #2323
+
+Preliminary Docker support was added. Tahoe container images may be available
+on DockerHub. PR#165 #2419 #2421
+
+Old/obsolete debian packaging tools have been removed. #2282
+
+Minor Changes
+-------------
+
+- Welcome page: add per-server "(space) Available" column #648
+- check/deep-check learned to accept multiple location args #740
+- Checker reports: remove needs-rebalancing, add count-happiness #1784 #2105
+- CLI --help: cite (but don't list) global options on each command #2233
+- Fix ftp 'ls' to work with Twisted-15.0.0 #2394
+
+Roughly 75 tickets were closed in this release: 623 648 712 740 754 898 1146
+1159 1336 1381 1411 1634 1674 1698 1707 1717 1737 1784 1800 1807 1842 1847
+1901 1918 1953 1960 1961 1966 1969 1972 1974 1988 1992 2005 2008 2023 2027
+2028 2034 2048 2067 2086 2105 2121 2128 2165 2193 2208 2209 2233 2235 2242
+2245 2248 2249 2249 2280 2281 2282 2290 2305 2312 2323 2340 2354 2380 2393
+2394 2398 2400 2415 2416 2417 2433. Another dozen were referenced but not
+closed: 182 666 982 1064 1258 1531 1536 1742 1834 1931 1935 2286. Roughly 40
+GitHub pull-requests were closed: 32 48 50 56 57 61 62 62 63 64 69 73 81 82
+84 85 87 91 94 95 96 103 107 109 112 114 120 122 125 126 133 135 136 137 142
+146 149 152 165.
+
+For more information about any ticket, visit e.g.
+https://tahoe-lafs.org/trac/tahoe-lafs/ticket/754
 
 
 Release 1.10.0 (2013-05-01)
