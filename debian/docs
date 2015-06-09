@@ -1,2 +1,5 @@
-README.txt
+README.rst
+NEWS.rst
+CREDITS
+relnotes.txt
 docs/*
