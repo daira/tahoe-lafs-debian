@@ -67,6 +67,7 @@ docs/proposed/mutsemi.svg
 docs/proposed/old-accounts-introducer.txt
 docs/proposed/old-accounts-pubkey.txt
 docs/proposed/magic-folder/filesystem-integration.rst
+docs/proposed/magic-folder/remote-to-local-sync.rst
 docs/specifications/CHK-hashes.svg
 docs/specifications/Makefile
 docs/specifications/URI-extension.rst
@@ -268,6 +269,7 @@ src/allmydata/scripts/common.py
 src/allmydata/scripts/common_http.py
 src/allmydata/scripts/create_node.py
 src/allmydata/scripts/debug.py
+src/allmydata/scripts/default_nodedir.py
 src/allmydata/scripts/keygen.py
 src/allmydata/scripts/runner.py
 src/allmydata/scripts/slow_operation.py
