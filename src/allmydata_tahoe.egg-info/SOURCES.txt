@@ -68,6 +68,7 @@ docs/proposed/old-accounts-introducer.txt
 docs/proposed/old-accounts-pubkey.txt
 docs/proposed/magic-folder/filesystem-integration.rst
 docs/proposed/magic-folder/remote-to-local-sync.rst
+docs/proposed/magic-folder/user-interface-design.rst
 docs/specifications/CHK-hashes.svg
 docs/specifications/Makefile
 docs/specifications/URI-extension.rst

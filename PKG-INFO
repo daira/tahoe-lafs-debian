@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: allmydata-tahoe
-Version: 1.10.1b1
+Version: 1.10.1
 Summary: secure, decentralized, fault-tolerant filesystem
 Home-page: https://tahoe-lafs.org/
 Author: the Tahoe-LAFS project
@@ -20,7 +20,7 @@ Description: ==========
         LICENCE
         =======
         
-        Copyright 2006-2014 The Tahoe-LAFS Software Foundation
+        Copyright 2006-2015 The Tahoe-LAFS Software Foundation
         
         You may use this package under the GNU General Public License, version 2 or, at
         your option, any later version.  You may use this package under the Transitive
