@@ -3,7 +3,7 @@ Section: utils
 Priority: optional
 Maintainer: Ramakrishnan Muthukrishnan <rkrishnan@debian.org>
 Uploaders: Micah Anderson <micah@debian.org>, Bert Agaz <bertagaz@ptitcanardnoir.org>
-Build-Depends: debhelper (>= 9), python-setuptools, python-all (>= 2.6.6-3~),
+Build-Depends: debhelper (>= 9), python-setuptools, python2.7-dev,
  python-twisted (>= 13.0.0), dh-python
 Standards-Version: 3.9.6
 Vcs-Git: git://anonscm.debian.org/tahoe/tahoe.git
