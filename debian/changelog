@@ -1,3 +1,10 @@
+tahoe-lafs (1.10.1-2) unstable; urgency=medium
+
+  * debian/pyversions: depend on 2.7 or above, as 2.6 is no longer
+    available in sid (Closes: #790022).
+
+ -- Ramakrishnan Muthukrishnan <rkrishnan@debian.org>  Fri, 26 Jun 2015 16:29:43 +0530
+
 tahoe-lafs (1.10.1-1) unstable; urgency=medium
 
   * New upstream release.
