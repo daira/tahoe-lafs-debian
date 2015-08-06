@@ -95,6 +95,7 @@ misc/build_helpers/test-dont-install-newer-dep-when-you-already-have-sufficientl
 misc/build_helpers/test-dont-use-too-old-dep.py
 misc/build_helpers/test-git-ignore.py
 misc/build_helpers/test-osx-pkg.py
+misc/build_helpers/test-pip-install.py
 misc/build_helpers/icons/logo.ico
 misc/build_helpers/icons/logo.svg
 misc/build_helpers/icons/make-osx-icon.sh
@@ -379,6 +380,7 @@ src/allmydata/util/keyutil.py
 src/allmydata/util/limiter.py
 src/allmydata/util/log.py
 src/allmydata/util/mathutil.py
+src/allmydata/util/namespace.py
 src/allmydata/util/netstring.py
 src/allmydata/util/nummedobj.py
 src/allmydata/util/observer.py
