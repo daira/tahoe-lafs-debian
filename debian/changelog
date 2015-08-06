@@ -1,3 +1,11 @@
+tahoe-lafs (1.10.2-1) unstable; urgency=medium
+
+  * New upstream release.
+  * debian/control: depend on python-pyasn1 >= 0.1.8 and do not depend
+    on python-mock.
+
+ -- Daira Hopwood <daira@jacaranda.org>  Thu, 6 Aug 2015 15:50:40 +0100
+
 tahoe-lafs (1.10.1-2) unstable; urgency=medium
 
   * debian/pyversions: depend on 2.7 or above, as 2.6 is no longer

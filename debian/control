@@ -1,7 +1,8 @@
 Source: tahoe-lafs
 Section: utils
 Priority: optional
-Maintainer: Ramakrishnan Muthukrishnan <rkrishnan@debian.org>
+Maintainer: Ramakrishnan Muthukrishnan <rkrishnan@debian.org>,
+ Daira Hopwood <daira@jacaranda.org>
 Uploaders: Micah Anderson <micah@debian.org>, Bert Agaz <bertagaz@ptitcanardnoir.org>
 Build-Depends: debhelper (>= 9), python-setuptools, python2.7-dev,
  python-twisted (>= 13.0.0), dh-python
@@ -12,10 +13,10 @@ Homepage: http://tahoe-lafs.org/trac/tahoe
 
 Package: tahoe-lafs
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-pyasn1 (>= 0.1.4),
+Depends: ${misc:Depends}, ${python:Depends}, python-pyasn1 (>= 0.1.8),
  python-crypto (>= 2.6), python-foolscap (>= 0.8.0), python-openssl (>= 0.14),
  python-nevow (>= 0.11.1), python-simplejson (>= 1.4), python-zfec (>= 1.1.0),
- python-pycryptopp (>= 0.6.0), python-setuptools, python-mock (>= 0.8.0),
+ python-pycryptopp (>= 0.6.0), python-setuptools,
  python-twisted (>= 13.0.0), net-tools
 Description: Secure distributed file store
  Tahoe, the Least Authority File Store, is a distributed filesystem that
