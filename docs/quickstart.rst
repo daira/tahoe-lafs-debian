@@ -44,9 +44,9 @@ directory).
 Get Tahoe-LAFS
 --------------
 
-Download the latest stable release, `Tahoe-LAFS v1.10.1`_.
+Download the latest stable release, `Tahoe-LAFS v1.10.2`_.
 
-.. _Tahoe-LAFS v1.10.1: https://tahoe-lafs.org/source/tahoe-lafs/releases/allmydata-tahoe-1.10.1.zip
+.. _Tahoe-LAFS v1.10.2: https://tahoe-lafs.org/source/tahoe-lafs/releases/allmydata-tahoe-1.10.2.zip
 
 Set Up Tahoe-LAFS
 -----------------
@@ -60,6 +60,11 @@ build anything you need from various websites.
 On Windows, the ``build`` step might tell you to open a new Command Prompt
 (or, on XP and earlier, to log out and back in again). This is needed the
 first time you set up Tahoe-LAFS on a particular installation of Windows.
+
+If you see an error like ``fatal error: Python.h: No such file or directory``
+while compiling the dependencies, you need the Python development headers. If
+you are on a Debian or Ubuntu system, you can install them with ``sudo
+apt-get install python-dev``. On RedHat/Fedora, install ``python-devel``.
 
 Run "``bin/tahoe --version``" (on Windows, "``bin\tahoe --version``") to
 verify that the executable tool prints out the right version number after

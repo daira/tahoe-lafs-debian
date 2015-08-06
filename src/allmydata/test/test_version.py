@@ -1,9 +1,12 @@
 
+import sys
+import pkg_resources
 from pkg_resources import Requirement
 
 from twisted.trial import unittest
 
-from allmydata import check_requirement, cross_check, extract_openssl_version, PackagingError
+from allmydata import check_requirement, cross_check, get_package_versions_and_locations, \
+     extract_openssl_version, PackagingError
 from allmydata.util.verlib import NormalizedVersion as V, \
                                   IrrationalVersionError, \
                                   suggest_normalized_version as suggest
@@ -69,6 +72,25 @@ class CheckRequirement(unittest.TestCase):
         for pkg, ver in vers_and_locs.items():
             self.failIf(ver[0] in Requirement.parse(req), str((ver, req)))
 
+    def test_packages_from_pkg_resources(self):
+        if hasattr(sys, 'frozen'):
+            raise unittest.SkipTest("This test doesn't apply to frozen builds.")
+
+        class MockPackage(object):
+            def __init__(self, project_name, version, location):
+                self.project_name = project_name
+                self.version = version
+                self.location = location
+
+        def call_pkg_resources_require(*args):
+            return [MockPackage("Foo", "1.0", "/path")]
+        self.patch(pkg_resources, 'require', call_pkg_resources_require)
+
+        (packages, errors) = get_package_versions_and_locations()
+        self.failUnlessIn(("foo", ("1.0", "/path", "according to pkg_resources")), packages)
+        self.failIfEqual(errors, [])
+        self.failUnlessEqual([e for e in errors if "was not found by pkg_resources" not in e], [])
+
     def test_cross_check_ticket_1355(self):
         # The bug in #1355 is triggered when a version string from either pkg_resources or import
         # is not parseable at all by normalized_version.
@@ -89,18 +111,17 @@ class CheckRequirement(unittest.TestCase):
         self.failUnlessEqual(res, [])
 
         res = cross_check({"foo": ("unparseable", "")}, [])
-        self.failUnlessEqual(len(res), 1)
-        self.failUnlessIn("not found by import", res[0])
+        self.failUnlessEqual(res, [])
 
         res = cross_check({"argparse": ("unparseable", "")}, [])
-        self.failUnlessEqual(len(res), 0)
+        self.failUnlessEqual(res, [])
 
         res = cross_check({}, [("foo", ("unparseable", "", None))])
         self.failUnlessEqual(len(res), 1)
         self.failUnlessIn("not found by pkg_resources", res[0])
 
         res = cross_check({"distribute": ("1.0", "/somewhere")}, [("setuptools", ("2.0", "/somewhere", "distribute"))])
-        self.failUnlessEqual(len(res), 0)
+        self.failUnlessEqual(res, [])
 
         res = cross_check({"distribute": ("1.0", "/somewhere")}, [("setuptools", ("2.0", "/somewhere", None))])
         self.failUnlessEqual(len(res), 1)
@@ -111,7 +132,7 @@ class CheckRequirement(unittest.TestCase):
         self.failUnlessIn("location mismatch", res[0])
 
         res = cross_check({"zope.interface": ("1.0", "")}, [("zope.interface", ("unknown", "", None))])
-        self.failUnlessEqual(len(res), 0)
+        self.failUnlessEqual(res, [])
 
         res = cross_check({"foo": ("1.0", "")}, [("foo", ("unknown", "", None))])
         self.failUnlessEqual(len(res), 1)
@@ -121,13 +142,13 @@ class CheckRequirement(unittest.TestCase):
         # the version and the path fail to match.
 
         res = cross_check({"foo": ("1.0", "/somewhere")}, [("foo", ("2.0", "/somewhere", None))])
-        self.failUnlessEqual(len(res), 0)
+        self.failUnlessEqual(res, [])
 
         res = cross_check({"foo": ("1.0", "/somewhere")}, [("foo", ("1.0", "/somewhere_different", None))])
-        self.failUnlessEqual(len(res), 0)
+        self.failUnlessEqual(res, [])
 
         res = cross_check({"foo": ("1.0-r123", "/somewhere")}, [("foo", ("1.0.post123", "/somewhere_different", None))])
-        self.failUnlessEqual(len(res), 0)
+        self.failUnlessEqual(res, [])
 
         res = cross_check({"foo": ("1.0", "/somewhere")}, [("foo", ("2.0", "/somewhere_different", None))])
         self.failUnlessEqual(len(res), 1)
